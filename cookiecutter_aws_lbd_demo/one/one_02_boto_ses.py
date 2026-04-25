@@ -29,3 +29,19 @@ class OneBotoSesMixin:  # pragma: no cover
                 profile_name=self.config.local_aws_profile,
                 region_name=self.config.aws_region,
             )
+
+    @cached_property
+    def aws_region(self: "One") -> str:
+        return self.config.aws_region
+
+    @cached_property
+    def aws_account_id(self: "One") -> str:
+        return self.boto_ses.client("sts").get_caller_identity()["Account"]
+
+    @cached_property
+    def aws_account_alias(self: "One") -> str:
+        return self.boto_ses.client("iam").list_account_aliases()["AccountAliases"][0]
+
+    @cached_property
+    def cloudformation_client(self: "One"):
+        return self.boto_ses.client("cloudformation")

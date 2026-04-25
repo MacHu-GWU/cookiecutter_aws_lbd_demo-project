@@ -196,6 +196,12 @@ wheels = [
 ]
 
 [package.optional-dependencies]
+cloudformation = [
+    { name = "mypy-boto3-cloudformation" },
+]
+iam = [
+    { name = "mypy-boto3-iam" },
+]
 lambda = [
     { name = "mypy-boto3-lambda" },
 ]
@@ -469,7 +475,6 @@ source = { editable = "." }
 dependencies = [
     { name = "boto-session-manager" },
     { name = "boto3" },
-    { name = "boto3-stubs", extra = ["lambda", "s3"] },
     { name = "pydantic" },
     { name = "python-dotenv" },
     { name = "s3pathlib" },
@@ -479,6 +484,7 @@ dependencies = [
 
 [package.optional-dependencies]
 dev = [
+    { name = "boto3-stubs", extra = ["cloudformation", "iam", "lambda", "s3"] },
     { name = "rich" },
 ]
 doc = [
@@ -510,7 +516,7 @@ requires-dist = [
     { name = "aws-cdk-lib", marker = "extra == 'test'", specifier = ">=2.250.0,<3.0.0" },
     { name = "boto-session-manager", specifier = ">=1.8.1,<2.0.0" },
     { name = "boto3", specifier = ">=1.42.95,<2.0.0" },
-    { name = "boto3-stubs", extras = ["s3", "lambda"], specifier = ">=1.42.95,<2.0.0" },
+    { name = "boto3-stubs", extras = ["cloudformation", "s3", "lambda", "iam"], marker = "extra == 'dev'", specifier = ">=1.42.95,<2.0.0" },
     { name = "docfly", marker = "extra == 'doc'", specifier = "==3.0.3" },
     { name = "furo", marker = "extra == 'doc'", specifier = "==2024.8.6" },
     { name = "httpx", marker = "extra == 'mise'", specifier = ">=0.28.0,<1.0.0" },
@@ -1155,6 +1161,30 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/9d/55/d01f0c4b45ade6536c51170b9043db8b2ec6ddf4a35c7ea3f5f559ac935b/mistune-3.2.0.tar.gz", hash = "sha256:708487c8a8cdd99c9d90eb3ed4c3ed961246ff78ac82f03418f5183ab70e398a", size = 95467, upload-time = "2025-12-23T11:36:34.994Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9b/f7/4a5e785ec9fbd65146a27b6b70b6cdc161a66f2024e4b04ac06a67f5578b/mistune-3.2.0-py3-none-any.whl", hash = "sha256:febdc629a3c78616b94393c6580551e0e34cc289987ec6c35ed3f4be42d0eee1", size = 53598, upload-time = "2025-12-23T11:36:33.211Z" },
+]
+
+[[package]]
+name = "mypy-boto3-cloudformation"
+version = "1.42.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions", marker = "python_full_version < '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4c/6a/5a56081f693680fae9a0cf5d04358a9c69b7c06fc36605192acfcc70da75/mypy_boto3_cloudformation-1.42.3.tar.gz", hash = "sha256:3bd3849bc89a371d4c368691535b320244ba00579cddd63bb58b73f28d70e510", size = 61118, upload-time = "2025-12-04T20:57:30.382Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/76/4b/97b5a89b5c5ca057180901859a7cea1f163e1bef1e1ccff61a731b0db6a0/mypy_boto3_cloudformation-1.42.3-py3-none-any.whl", hash = "sha256:d4c802dd78844f10e944143b9f40c2c1199ed5f57f3540ab7bfc2281ac5bcaf0", size = 72126, upload-time = "2025-12-04T20:57:27.664Z" },
+]
+
+[[package]]
+name = "mypy-boto3-iam"
+version = "1.42.64"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions", marker = "python_full_version < '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7f/8d/be91cc1fb9b06c580ccce6fa5639b31f6892b64a986f6c7aa0469488ad43/mypy_boto3_iam-1.42.64.tar.gz", hash = "sha256:d01308ad4a197f8c465aed8002502793802f10fa0a01323b5efda4e2fbd937a5", size = 89309, upload-time = "2026-03-09T19:53:09.421Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/82/22/76cd5c1272349fc8d6de1bd4a1c2ec6d9c1f1236bb24749aec331560dbb7/mypy_boto3_iam-1.42.64-py3-none-any.whl", hash = "sha256:d138d8f41e719d9bbfc4aa3d2095030202f0c0642b37d038d21a153814198582", size = 95021, upload-time = "2026-03-09T19:52:58.148Z" },
 ]
 
 [[package]]

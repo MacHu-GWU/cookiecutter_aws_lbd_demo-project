@@ -9,10 +9,12 @@ from ..vendor.pytest_cov_helper import (
 
 def run_unit_test(
     script: str,
+    is_folder: bool = False,
 ):
     _run_unit_test(
         script=script,
         root_dir=f"{path_enum.dir_project_root}",
+        is_folder=is_folder,
     )
 
 
