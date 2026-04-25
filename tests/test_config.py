@@ -12,6 +12,7 @@ def test():
 
     _ = config.project_name_snake
     _ = config.project_name_slug
+    _ = config.cloudformation_stack_name
 
 
 if __name__ == "__main__":
