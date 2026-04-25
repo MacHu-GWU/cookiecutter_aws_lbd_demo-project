@@ -17,7 +17,7 @@ class InfraStack(cdk.Stack):
 
         super().__init__(
             scope=scope,
-            id=f"{config.project_name_snake}-infra",
+            id=f"{config.project_name_slug}-infra",
             **kwargs,
         )
 
