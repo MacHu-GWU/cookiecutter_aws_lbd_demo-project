@@ -18,5 +18,5 @@ class Config(BaseModel):
         return self.project_name_snake.replace("_", "-")
 
     @property
-    def cdk_stack_name(self) -> str:
+    def cloudformation_stack_name(self) -> str:
         return self.project_name_slug
