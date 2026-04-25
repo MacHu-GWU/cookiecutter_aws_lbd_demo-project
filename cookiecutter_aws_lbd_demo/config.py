@@ -1,0 +1,16 @@
+# -*- coding: utf-8 -*-
+
+from pydantic import BaseModel
+from pydantic import Field
+
+
+class Config(BaseModel):
+    project_name: str = Field()
+
+    @property
+    def project_name_snake(self) -> str:
+        return self.project_name.replace("-", "_")
+
+    @property
+    def project_name_slug(self) -> str:
+        return self.project_name_snake.replace("_", "-")
