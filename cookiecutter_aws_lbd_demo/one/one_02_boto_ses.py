@@ -43,5 +43,9 @@ class OneBotoSesMixin:  # pragma: no cover
         return self.boto_ses.client("iam").list_account_aliases()["AccountAliases"][0]
 
     @cached_property
+    def s3_client(self: "One"):
+        return self.boto_ses.client("cloudformation")
+
+    @cached_property
     def cloudformation_client(self: "One"):
         return self.boto_ses.client("cloudformation")

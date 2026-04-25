@@ -25,3 +25,11 @@ class OneS3Mixin:  # pragma: no cover
         return S3Path(
             f"s3://{self.s3bucket}/projects/{self.config.project_name}/"
         ).to_dir()
+
+    @property
+    def s3dir_source(self: "One") -> S3Path:
+        return self.s3dir_data.joinpath("source").to_dir()
+
+    @property
+    def s3dir_target(self: "One") -> S3Path:
+        return self.s3dir_data.joinpath("target").to_dir()
