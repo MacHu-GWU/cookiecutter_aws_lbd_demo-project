@@ -20,3 +20,11 @@ class Config(BaseModel):
     @property
     def cloudformation_stack_name(self) -> str:
         return self.project_name_slug
+
+    @property
+    def cloudformation_stack_url(self) -> str:
+        return (
+            f"https://{self.aws_region}.console.aws.amazon.com"
+            f"/cloudformation/home?region={self.aws_region}#"
+            f"/stacks?filteringText={self.cloudformation_stack_name}&filteringStatus=active&viewNested=true"
+        )

@@ -5,6 +5,11 @@ CODECOV_TOKEN = "{{ exec(command='uvx --from home-secret-toml hst get codecov_io
 READTHEDOCS_TOKEN = "{{ exec(command='uvx --from home-secret-toml hst get readthedocs.accounts.sh.users.sh.secrets.dev.value') }}"
 PYPI_TOKEN = "{{ exec(command='uvx --from home-secret-toml hst get pypi.accounts.sh.token') }}"
 
+_.file = [
+  ".env.shared",
+  ".env",
+]
+
 [tools]
 python = "3.12"
 uv = "latest"
@@ -124,14 +129,14 @@ cdk deploy --all --require-approval never
 description = "🟢 Deploy CDK stacks to AWS (runs cdk deploy, skip approval)"
 dir = "cdk"
 depends = ["inst"]
-run = "cdk deploy --all --require-approval never"
+run = "cdk deploy --all --require-approval never --profile $LOCAL_AWS_PROFILE"
 
 [tasks.cdk-down]
 description = "🔴 Destroy CDK stacks from AWS (force, no confirmation)"
 dir = "cdk"
-run = "cdk destroy --all --force"
+run = "cdk destroy --all --force --profile $LOCAL_AWS_PROFILE"
 
 [tasks.cdk-down-ask]
 description = "🟡 Destroy CDK stacks from AWS (with confirmation prompt)"
 dir = "cdk"
-run = "cdk destroy --all"
+run = "cdk destroy --all --profile $LOCAL_AWS_PROFILE"
