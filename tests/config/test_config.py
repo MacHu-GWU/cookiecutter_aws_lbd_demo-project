@@ -9,6 +9,7 @@ def test():
     _ = config.project_name
     _ = config.aws_region
     _ = config.local_aws_profile
+    _ = config.lbd_func_py_ver
 
     _ = config.project_name_snake
     _ = config.project_name_slug

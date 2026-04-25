@@ -53,6 +53,7 @@ class OneConfigMixin:
             project_name=os.environ["PROJECT_NAME"],
             aws_region=os.environ["AWS_REGION"],
             local_aws_profile=os.environ.get("LOCAL_AWS_PROFILE"),
+            lbd_func_py_ver=os.environ.get("LBD_FUNC_PY_VER"),
             lbd_func_hello=lbd_func_hello,
             lbd_func_s3sync=lbd_func_s3sync,
         )

@@ -15,6 +15,7 @@ class Config(
     aws_region: str = Field()
     local_aws_profile: str | None = Field(default=None)
 
+    lbd_func_py_ver: str | None = Field(default=None)
     lbd_func_hello: LbdFunc | None = Field()
     lbd_func_s3sync: LbdFunc | None = Field()
 

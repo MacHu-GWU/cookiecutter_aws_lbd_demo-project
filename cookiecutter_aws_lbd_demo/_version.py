@@ -2,6 +2,6 @@
 
 from importlib.metadata import version
 
-from .paths import PACKAGE_NAME
+from cookiecutter_aws_lbd_demo.paths import PACKAGE_NAME
 
 __version__ = version(PACKAGE_NAME)
