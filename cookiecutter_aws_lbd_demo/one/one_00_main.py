@@ -15,10 +15,12 @@ except ImportError:  # pragma: no cover
 from ..runtime import runtime
 
 from .one_01_config import OneConfigMixin
+from .one_02_boto_ses import OneBotoSesMixin
 
 
 class One(
     OneConfigMixin,
+    OneBotoSesMixin,
 ):  # pragma: no cover
     """
     Main singleton class providing unified access to all application resources and services.
