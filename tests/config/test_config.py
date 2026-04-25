@@ -14,6 +14,8 @@ def test():
     _ = config.project_name_slug
     _ = config.cloudformation_stack_name
 
+    _ = config.lambda_layer_name
+
     for lbd_func in [
         config.lbd_func_hello,
         config.lbd_func_s3sync,

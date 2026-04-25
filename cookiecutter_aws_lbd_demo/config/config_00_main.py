@@ -4,9 +4,13 @@ from pydantic import BaseModel
 from pydantic import Field
 
 from .config_01_lbd_func import LbdFunc
+from .config_02_lbd_deploy import LbdFuncDeployMixin
 
 
-class Config(BaseModel):
+class Config(
+    BaseModel,
+    LbdFuncDeployMixin,
+):
     project_name: str = Field()
     aws_region: str = Field()
     local_aws_profile: str | None = Field(default=None)
