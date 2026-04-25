@@ -3,11 +3,16 @@
 from pydantic import BaseModel
 from pydantic import Field
 
+from .config_01_lbd_func import LbdFunc
+
 
 class Config(BaseModel):
     project_name: str = Field()
     aws_region: str = Field()
     local_aws_profile: str | None = Field(default=None)
+
+    lbd_func_hello: LbdFunc | None = Field()
+    lbd_func_s3sync: LbdFunc | None = Field()
 
     @property
     def project_name_snake(self) -> str:
