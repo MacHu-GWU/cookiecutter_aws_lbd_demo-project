@@ -40,7 +40,11 @@ class OneBotoSesMixin:  # pragma: no cover
 
     @cached_property
     def aws_account_alias(self: "One") -> str:
-        return self.boto_ses.client("iam").list_account_aliases()["AccountAliases"][0]
+        try:
+            res = self.boto_ses.client("iam").list_account_aliases()
+            return res["AccountAliases"][0]
+        except IndexError:
+            return "dummy-us-east-1-data"
 
     @cached_property
     def s3_client(self: "One"):

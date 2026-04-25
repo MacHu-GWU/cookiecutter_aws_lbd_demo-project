@@ -18,7 +18,7 @@ if T.TYPE_CHECKING:  # pragma: no cover
 class OneS3Mixin:  # pragma: no cover
     @cached_property
     def s3bucket(self: "One") -> str:
-        return f"s3://{self.aws_account_alias}-{self.aws_region}-data"
+        return f"{self.aws_account_alias}-{self.aws_region}-data"
 
     @cached_property
     def s3dir_data(self: "One") -> S3Path:

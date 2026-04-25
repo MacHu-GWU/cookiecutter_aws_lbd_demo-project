@@ -5,6 +5,7 @@ omit =
     cookiecutter_aws_lbd_demo/docs/*
     cookiecutter_aws_lbd_demo/tests/*
     cookiecutter_aws_lbd_demo/vendor/*
+    cookiecutter_aws_lbd_demo/cdk/stacks/infra_stack_exports.py
     cookiecutter_aws_lbd_demo/_version.py
     cookiecutter_aws_lbd_demo/cli.py
     cookiecutter_aws_lbd_demo/paths.py
