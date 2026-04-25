@@ -38,3 +38,11 @@ class Config(
             f"/cloudformation/home?region={self.aws_region}#"
             f"/stacks?filteringText={self.cloudformation_stack_name}&filteringStatus=active&viewNested=true"
         )
+
+    @property
+    def lbd_func_py_ver_major(self) -> int:
+        return int(self.lbd_func_py_ver.split(".")[0])
+
+    @property
+    def lbd_func_py_ver_minor(self) -> int:
+        return int(self.lbd_func_py_ver.split(".")[1])

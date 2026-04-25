@@ -17,12 +17,14 @@ from ..runtime import runtime
 from .one_01_config import OneConfigMixin
 from .one_02_boto_ses import OneBotoSesMixin
 from .one_03_s3 import OneS3Mixin
+from .one_04_devops import OneDevOpsMixin
 
 
 class One(
     OneConfigMixin,
     OneBotoSesMixin,
     OneS3Mixin,
+    OneDevOpsMixin,
 ):  # pragma: no cover
     """
     Main singleton class providing unified access to all application resources and services.
