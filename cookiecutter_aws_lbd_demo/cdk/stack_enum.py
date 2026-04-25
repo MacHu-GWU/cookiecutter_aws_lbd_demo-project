@@ -18,6 +18,7 @@ class StackEnum:
 
         return InfraStack(
             scope=self.app,
+            one=one,
         )
 
 

@@ -5,18 +5,21 @@ from aws_cdk import aws_iam as iam
 
 from constructs import Construct
 
-from ...one.api import one
+from ...one.api import One
 
 
 class InfraStack(cdk.Stack):
     def __init__(
         self,
         scope: Construct,
+        one: One,
         **kwargs,
     ) -> None:
+        self.one = one
+
         super().__init__(
             scope=scope,
-            id=f"{one.config.project_name_slug}-infra",
+            id=f"{self.one.config.project_name_slug}-infra",
             **kwargs,
         )
 
@@ -40,8 +43,8 @@ class InfraStack(cdk.Stack):
                 "s3:GetObjectTagging",
             ],
             resources=[
-                f"arn:aws:s3:::{one.s3dir_data.bucket}",
-                f"arn:aws:s3:::{one.s3dir_data.bucket}/{one.s3dir_data.key}*",
+                f"arn:aws:s3:::{self.one.s3dir_data.bucket}",
+                f"arn:aws:s3:::{self.one.s3dir_data.bucket}/{self.one.s3dir_data.key}*",
             ],
         )
 
@@ -54,8 +57,8 @@ class InfraStack(cdk.Stack):
                 "s3:DeleteObjectTagging",
             ],
             resources=[
-                f"arn:aws:s3:::{one.s3dir_data.bucket}",
-                f"arn:aws:s3:::{one.s3dir_data.bucket}/{one.s3dir_data.key}*",
+                f"arn:aws:s3:::{self.one.s3dir_data.bucket}",
+                f"arn:aws:s3:::{self.one.s3dir_data.bucket}/{self.one.s3dir_data.key}*",
             ],
         )
 
@@ -64,14 +67,14 @@ class InfraStack(cdk.Stack):
             scope=self,
             id="IamRoleForLambda",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
-            role_name=f"{one.config.project_name_snake}-{cdk.Aws.REGION}-lambda",
+            role_name=f"{self.one.config.project_name_snake}-{cdk.Aws.REGION}-lambda",
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name(
                     "service-role/AWSLambdaBasicExecutionRole"
                 ),
             ],
             inline_policies={
-                f"{one.config.project_name_snake}-{cdk.Aws.REGION}-lambda": iam.PolicyDocument(
+                f"{self.one.config.project_name_snake}-{cdk.Aws.REGION}-lambda": iam.PolicyDocument(
                     statements=[
                         self.stat_s3_bucket_read,
                         self.stat_s3_bucket_write,
@@ -84,5 +87,5 @@ class InfraStack(cdk.Stack):
             self,
             "IamRoleForLambdaArn",
             value=self.iam_role_for_lambda.role_arn,
-            export_name=f"{one.config.project_name_slug}-lambda-role-arn",
+            export_name=f"{self.one.config.project_name_slug}-lambda-role-arn",
         )
