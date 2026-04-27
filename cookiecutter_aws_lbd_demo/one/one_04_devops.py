@@ -8,6 +8,8 @@ source artifact packaging, cross-account permission management, and layer versio
 """
 
 import typing as T
+import shutil
+from pathlib import Path
 
 from ..paths import path_enum
 from ..lazy_imports import simple_aws_lambda
@@ -88,12 +90,10 @@ class OneDevOpsMixin:  # pragma: no cover
         """
         Build Lambda source artifacts using uv and upload the zip to S3.
         """
-        from pathlib import Path
 
-        path_bin_uv = path_enum.dir_project_root / ".venv" / "bin" / "uv"
         result = aws_lbd_art_builder_core.source_api.build_and_upload_source_using_uv(
             s3_client=self.s3_client,
-            path_bin_uv=path_bin_uv,
+            path_bin_uv=Path(shutil.which("uv")),
             dir_project_root=path_enum.dir_project_root,
             s3dir_source=self.s3dir_lambda.joinpath("source/").to_dir(),
             skip_prompt=True,
