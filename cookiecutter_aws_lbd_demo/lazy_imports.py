@@ -11,11 +11,19 @@ except ImportError as e:  # pragma: no cover
     )
 
 try:
-    import aws_lambda_artifact_builder.api as aws_lambda_artifact_builder
+    import aws_lbd_art_builder_uv.api as aws_lbd_art_builder_uv
 except ImportError as e:  # pragma: no cover
-    aws_lambda_artifact_builder = MissingDependency(
-        name="aws_lambda_artifact_builder",
-        error_message=f"please do 'make install-dev'",
+    aws_lbd_art_builder_uv = MissingDependency(
+        name="aws_lbd_art_builder_uv",
+        error_message=f"please do 'uv sync --extra dev'",
+    )
+
+try:
+    import aws_lbd_art_builder_core.api as aws_lbd_art_builder_core
+except ImportError as e:  # pragma: no cover
+    aws_lbd_art_builder_core = MissingDependency(
+        name="aws_lbd_art_builder_core",
+        error_message=f"please do 'uv sync --extra dev'",
     )
 
 try:
