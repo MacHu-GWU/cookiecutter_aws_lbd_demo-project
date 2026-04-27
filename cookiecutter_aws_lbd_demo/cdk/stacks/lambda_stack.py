@@ -35,7 +35,7 @@ class Lbd:
     alias: lambda_.Alias
 
 
-class InfraStack(cdk.Stack):
+class LambdaStack(cdk.Stack):
     def __init__(
         self,
         scope: Construct,

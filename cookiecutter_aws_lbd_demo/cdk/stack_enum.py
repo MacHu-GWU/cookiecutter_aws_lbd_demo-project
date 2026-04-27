@@ -21,6 +21,15 @@ class StackEnum:
             one=one,
         )
 
+    @cached_property
+    def lambda_stack(self):
+        from .stacks.lambda_stack import LambdaStack
+
+        return LambdaStack(
+            scope=self.app,
+            one=one,
+        )
+
 
 # Create the global stack enumeration instance
 app = cdk.App()

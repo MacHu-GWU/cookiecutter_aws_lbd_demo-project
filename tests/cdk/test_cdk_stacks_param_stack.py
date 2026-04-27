@@ -6,6 +6,7 @@ class Test:
         from cookiecutter_aws_lbd_demo.cdk.stack_enum import stack_enum
 
         _ = stack_enum.infra_stack
+        _ = stack_enum.lambda_stack
 
         stack_enum.app.synth()
 
