@@ -11,6 +11,7 @@ from functools import cached_property
 from s3pathlib import S3Path
 
 import aws_cdk as cdk
+from aws_cdk import aws_iam as iam
 from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_s3_notifications as s3_notifications
 from aws_cdk import aws_lambda as lambda_
@@ -63,7 +64,7 @@ class LambdaStack(cdk.Stack):
             if not layer_arn.startswith("arn:"):  # pragma: no cover
                 final_layer_arn = (
                     f"arn:aws:lambda:{self.one.aws_region}:{self.one.aws_account_id}:layer"
-                    f":{self.one.lambda_layer_name}:{layer_arn}"
+                    f":{self.one.config.lambda_layer_name}:{layer_arn}"
                 )
             else:  # pragma: no cover
                 final_layer_arn = layer_arn
@@ -78,13 +79,7 @@ class LambdaStack(cdk.Stack):
 
     @cached_property
     def lambda_function_env_vars(self: "LambdaStack") -> dict[str, str]:
-        env_vars = self.conf_env.env_vars
-        env_vars.update(
-            {
-                USER_ENV_NAME: self.conf_env.env_name,
-                "CONFIG_VERSION": one.config.version,
-            }
-        )
+        env_vars = self.one.config.lbd_func_env_vars
         return env_vars
 
     def get_iam_role_construct_for_function(
@@ -92,7 +87,16 @@ class LambdaStack(cdk.Stack):
         lbd_func_config: LbdFunc,
     ) -> iam.IRole:
         if lbd_func_config.iam_role is None:
-            return self.iam_role_for_lambda
+            """
+            Key = IamRoleForLambdaArn
+            Value = arn:aws:iam::361769586364:role/cookiecutter_aws_lbd_demo-us-east-1-lambda
+            Export name = cookiecutter-aws-lbd-demo-lambda-role-arn = f"{self.one.config.project_name_slug}-lambda-role-arn"
+            """
+            return iam.Role.from_role_arn(
+                self,
+                id=f"ImportedLambdaRole{lbd_func_config.short_name_camel}",
+                role_arn=..., # load from export name
+            )
         # use role managed by external projects
         else:  # pragma: no cover
             return iam.Role.from_role_arn(
@@ -106,14 +110,14 @@ class LambdaStack(cdk.Stack):
         return s3.Bucket.from_bucket_name(
             self,
             id="ImportedArtifactsBucket",
-            bucket_name=self.conf_env.s3dir_artifacts.bucket,
+            bucket_name=self.one.s3dir_artifacts.bucket,
         )
 
     def get_lambda_function_construct_for_function(
         self: "LambdaStack",
         lbd_func_config: LbdFunc,
     ) -> lambda_.Function:
-        py_ver = f"PYTHON_{one.pywf.py_ver_major}_{one.pywf.py_ver_minor}"
+        py_ver = f"PYTHON_{self.one.config.lbd_func_py_ver_major}_{self.one.config.lbd_func_py_ver_minor}"
         runtime = getattr(lambda_.Runtime, py_ver)
         s3uri = path_enum.path_lambda_source_s3uri.read_text(encoding="utf-8").strip()
         s3path = S3Path(s3uri)
@@ -142,105 +146,51 @@ class LambdaStack(cdk.Stack):
         # cdk.Tags.of(lbd_func).add("your_key_here", "your_value_here")
         return lbd_func
 
-    def get_lambda_alias_construct_for_function(
-        self: "LambdaStack",
-        lbd_func_config: LbdFunc,
-        lbd_func: lambda_.Function,
-    ) -> lambda_.Alias:
-        if lbd_func_config.live_version1 is None:
-            version = lbd_func.current_version
-        else:  # pragma: no cover
-            version = lambda_.Version.from_version_arn(
-                self,
-                f"LambdaVersion1ForLive{lbd_func_config.short_name_camel}",
-                version_arn=f"{lbd_func.function_arn}:{lbd_func_config.target_live_version1}",
-            )
-
-        # handle optional canary deployment
-        if lbd_func_config.live_version2 is None:  # pragma: no cover
-            additional_versions = None
-        else:  # pragma: no cover
-            if not (0.01 <= lbd_func_config.live_version2_percentage <= 0.99):
-                raise ValueError("version2 percentage has to be between 0.01 and 0.99.")
-            if lbd_func_config.target_live_version1 == "$LATEST":
-                raise ValueError(
-                    "$LATEST is not supported for an alias pointing to more than 1 version."
-                )
-            additional_versions = [
-                lambda_.VersionWeight(
-                    version=lambda_.Version.from_version_arn(
-                        self,
-                        f"LambdaVersion2ForLive{lbd_func_config.short_name_camel}",
-                        version_arn=f"{lbd_func.function_arn}:{lbd_func_config.live_version2}",
-                    ),
-                    weight=lbd_func_config.live_version2_percentage,
-                )
-            ]
-
-        lbd_func_alias = lambda_.Alias(
-            self,
-            f"LambdaAlias{lbd_func_config.short_name_camel}",
-            alias_name=LIVE,
-            version=version,
-            additional_versions=additional_versions,
-        )
-        lbd_func_alias.node.add_dependency(lbd_func)
-        return lbd_func_alias
-
     def s02_01_create_lambda_functions(self: "LambdaStack"):
-        self.lambda_func_mapper: dict[str:Lbd] = dict()
-        for lbd_func_config in self.conf_env.lbd_func_mappings.values():
+        for lbd_func_config in self.one.config.lbd_func_mappings.values():
             lbd_func = self.get_lambda_function_construct_for_function(lbd_func_config)
-            lbd_func_alias = self.get_lambda_alias_construct_for_function(
-                lbd_func_config, lbd_func
-            )
-            # put lambda function and alias into mapper, so we can access them later
-            self.lambda_func_mapper[lbd_func_config.name] = Lbd(
-                func=lbd_func,
-                alias=lbd_func_alias,
-            )
 
-    def s02_02_configure_s3_event_source(self: "LambdaStack"):
-        # ----------------------------------------------------------------------
-        # Configure S3 Notification
-        #
-        # note:
-        # based on this issue: https://github.com/aws/aws-cdk/issues/23940
-        # it is impossible to use S3Bucket that is not defined in this stack
-        # for ``aws_cdk.aws_lambda_event_sources.S3EventSource``
-        # this is the only choice for now
-        # ----------------------------------------------------------------------
-        bucket = s3.Bucket.from_bucket_attributes(
-            self,
-            "ImportedBucket",
-            bucket_arn=f"arn:aws:s3:::{self.conf_env.s3dir_source.bucket}",
-        )
-
-        # --- use latest version
-        # bucket.add_event_notification(
-        #     s3.EventType.OBJECT_CREATED,
-        #     s3_notifications.LambdaDestination(
-        #         self.lambda_func_mapper[self.env.lbd_s3sync.name][KEY_FUNC],
-        #     ),
-        #     s3.NotificationKeyFilter(
-        #         prefix=f"{self.env.s3dir_source.key}",
-        #     ),
-        # )
-        #
-        # --- use lambda alias
-        bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED,
-            s3_notifications.LambdaDestination(
-                lambda_.Function.from_function_attributes(
-                    self,
-                    f"LambdaAliasAttribute{self.conf_env.lbd_s3sync.short_name_camel}",
-                    function_arn=self.lambda_func_mapper[
-                        self.conf_env.lbd_s3sync.name
-                    ].func.function_arn,
-                    same_environment=True,
-                ),
-            ),
-            s3.NotificationKeyFilter(
-                prefix=f"{self.conf_env.s3dir_source.key}",
-            ),
-        )
+    # def s02_02_configure_s3_event_source(self: "LambdaStack"):
+    #     # ----------------------------------------------------------------------
+    #     # Configure S3 Notification
+    #     #
+    #     # note:
+    #     # based on this issue: https://github.com/aws/aws-cdk/issues/23940
+    #     # it is impossible to use S3Bucket that is not defined in this stack
+    #     # for ``aws_cdk.aws_lambda_event_sources.S3EventSource``
+    #     # this is the only choice for now
+    #     # ----------------------------------------------------------------------
+    #     bucket = s3.Bucket.from_bucket_attributes(
+    #         self,
+    #         "ImportedBucket",
+    #         bucket_arn=f"arn:aws:s3:::{self.conf_env.s3dir_source.bucket}",
+    #     )
+    #
+    #     # --- use latest version
+    #     # bucket.add_event_notification(
+    #     #     s3.EventType.OBJECT_CREATED,
+    #     #     s3_notifications.LambdaDestination(
+    #     #         self.lambda_func_mapper[self.env.lbd_s3sync.name][KEY_FUNC],
+    #     #     ),
+    #     #     s3.NotificationKeyFilter(
+    #     #         prefix=f"{self.env.s3dir_source.key}",
+    #     #     ),
+    #     # )
+    #     #
+    #     # --- use lambda alias
+    #     bucket.add_event_notification(
+    #         s3.EventType.OBJECT_CREATED,
+    #         s3_notifications.LambdaDestination(
+    #             lambda_.Function.from_function_attributes(
+    #                 self,
+    #                 f"LambdaAliasAttribute{self.conf_env.lbd_s3sync.short_name_camel}",
+    #                 function_arn=self.lambda_func_mapper[
+    #                     self.conf_env.lbd_s3sync.name
+    #                 ].func.function_arn,
+    #                 same_environment=True,
+    #             ),
+    #         ),
+    #         s3.NotificationKeyFilter(
+    #             prefix=f"{self.conf_env.s3dir_source.key}",
+    #         ),
+    #     )
