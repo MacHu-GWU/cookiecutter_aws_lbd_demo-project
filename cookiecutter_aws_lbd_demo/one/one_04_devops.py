@@ -98,4 +98,6 @@ class OneDevOpsMixin:  # pragma: no cover
             s3dir_source=self.s3dir_lambda.joinpath("source/").to_dir(),
             skip_prompt=True,
         )
-        print(f"Uploaded source zip: {result.s3path_source_zip.uri}")
+        s3uri = result.s3path_source_zip.uri
+        print(f"Uploaded source zip: {s3uri}")
+        path_enum.path_lambda_source_s3uri.write_text(s3uri)
