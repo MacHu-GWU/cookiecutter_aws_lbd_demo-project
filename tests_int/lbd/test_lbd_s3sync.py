@@ -16,7 +16,7 @@ def test():
     s3path_target = one.s3dir_target.joinpath(basename)
 
     logger.info(f"preview s3 source: {s3path_source.console_url}")
-    logger.info(f"preview s3 target: {s3path_source.console_url}")
+    logger.info(f"preview s3 target: {s3path_target.console_url}")
 
     s3path_target.delete(bsm=one.s3_client)
     content = uuid.uuid4().hex

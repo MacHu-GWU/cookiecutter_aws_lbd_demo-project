@@ -34,6 +34,12 @@ class InfraStack(cdk.Stack):
         - IAM Object quotas: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html#reference_iam-quotas-entities
         """
 
+        self.stat_iam_list_account_aliases = iam.PolicyStatement(
+            effect=iam.Effect.ALLOW,
+            actions=["iam:ListAccountAliases"],
+            resources=["*"],
+        )
+
         self.stat_s3_bucket_read = iam.PolicyStatement(
             effect=iam.Effect.ALLOW,
             actions=[
@@ -76,6 +82,7 @@ class InfraStack(cdk.Stack):
             inline_policies={
                 f"{self.one.config.project_name_snake}-{cdk.Aws.REGION}-lambda": iam.PolicyDocument(
                     statements=[
+                        self.stat_iam_list_account_aliases,
                         self.stat_s3_bucket_read,
                         self.stat_s3_bucket_write,
                     ]
