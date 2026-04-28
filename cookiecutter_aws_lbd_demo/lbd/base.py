@@ -27,6 +27,7 @@ class BaseInput(
     """
     Base class for Lambda function input with validation and local testing capabilities.
     """
+
     def main(self, context: T.Optional["LambdaContext"] = None) -> "OutputType":
         """Execute the main business logic locally or in Lambda runtime."""
         raise NotImplementedError
@@ -45,16 +46,16 @@ class BaseInput(
         return output.model_dump()
 
 
-if __name__ == "__main__":
-    class Output(BaseOutput):
-        message: str
-
-    class Input(BaseInput[BaseOutput]):
-        name: str
-
-        def main(self, context: T.Optional["LambdaContext"] = None) -> "Output":
-            return Output(message=f"hello {self.name}")
-
-    input = Input(name="Alice")
-    output = input.main()
-    print(f"{output.message = }")
+# if __name__ == "__main__":
+#     class Output(BaseOutput):
+#         message: str
+#
+#     class Input(BaseInput[BaseOutput]):
+#         name: str
+#
+#         def main(self, context: T.Optional["LambdaContext"] = None) -> "Output":
+#             return Output(message=f"hello {self.name}")
+#
+#     input = Input(name="Alice")
+#     output = input.main()
+#     print(f"{output.message = }")

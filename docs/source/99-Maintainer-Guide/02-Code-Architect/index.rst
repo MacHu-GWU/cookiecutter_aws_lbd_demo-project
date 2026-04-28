@@ -187,25 +187,36 @@ The ``one`` Singleton — Central Nervous System
 
 The :mod:`~cookiecutter_aws_lbd_demo.one` subpackage is the most important
 architectural concept.  It provides a single ``one`` instance that lazily
-wires together config, AWS sessions, S3 paths, and DevOps operations:
+wires together config, AWS sessions, S3 paths, and DevOps operations.
+
+The :class:`~cookiecutter_aws_lbd_demo.one.one_00_main.One` class is composed
+from numbered mixin classes:
 
 .. literalinclude:: ../../../../cookiecutter_aws_lbd_demo/one/one_00_main.py
    :language: python
-   :lines: 46-59
+   :pyobject: One
    :caption: one/one_00_main.py — the One class composed from mixins
 
 
 The Lambda Handler Pattern
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Every Lambda function follows the same structure: a Pydantic ``Input`` model
-with a ``main()`` method, and a module-level ``lambda_handler``.
+Every Lambda function follows the same structure defined in
+:class:`~cookiecutter_aws_lbd_demo.lbd.base.BaseInput`:
+
+- A Pydantic ``Input`` model with a ``main()`` method for business logic
+- A Pydantic ``Output`` model for the response
+- A module-level ``lambda_handler = Input.lambda_handler`` binding
+
+The ``hello`` function is the simplest reference implementation:
 
 .. literalinclude:: ../../../../cookiecutter_aws_lbd_demo/lbd/hello.py
    :language: python
-   :caption: lbd/hello.py — a minimal Lambda function implementation
+   :caption: lbd/hello.py — reference implementation of a Lambda handler
 
-All handlers are re-exported through a single entry point:
+All handlers are re-exported through a single entry point module.  The CDK
+handler path (e.g., ``cookiecutter_aws_lbd_demo.lambda_function.hello_handler``)
+always points here:
 
 .. literalinclude:: ../../../../cookiecutter_aws_lbd_demo/lambda_function.py
    :language: python
@@ -220,83 +231,88 @@ How to Extend
 Adding a New Lambda Function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Follow these steps to add a new Lambda function (e.g., ``my_func``):
+To add a new Lambda function, follow the existing ``hello`` function as a
+template.  Each step below shows the reference code to copy and adapt.
 
-1. **Create the handler module** — ``cookiecutter_aws_lbd_demo/lbd/my_func.py``:
+**Step 1 — Create the handler module**
 
-   .. code-block:: python
+Create ``cookiecutter_aws_lbd_demo/lbd/my_func.py``, following the same
+pattern as :mod:`~cookiecutter_aws_lbd_demo.lbd.hello`:
 
-       from pydantic import Field
-       from ..logger import logger
-       from .base import BaseInput, BaseOutput
+.. literalinclude:: ../../../../cookiecutter_aws_lbd_demo/lbd/hello.py
+   :language: python
+   :caption: Reference: lbd/hello.py — copy this structure for your new function
 
+**Step 2 — Register the handler**
 
-       class Output(BaseOutput):
-           result: str = Field()
+Add an import line to :mod:`~cookiecutter_aws_lbd_demo.lambda_function`,
+following the existing pattern:
 
+.. literalinclude:: ../../../../cookiecutter_aws_lbd_demo/lambda_function.py
+   :language: python
+   :lines: 23-24
+   :caption: Reference: lambda_function.py — add a similar line for my_func_handler
 
-       class Input(BaseInput[Output]):
-           param: str = Field()
+**Step 3 — Add environment variables**
 
-           @logger.pretty_log()
-           def main(self, context=None) -> Output:
-               return Output(result=f"processed {self.param}")
+Add per-function settings to ``.env.shared``, following the existing entries:
 
+.. literalinclude:: ../../../../.env.shared
+   :caption: Reference: .env.shared — add LBD_FUNC_MY_FUNC_* entries in the same pattern
+   :lines: 5-8
 
-       lambda_handler = Input.lambda_handler
+**Step 4 — Add the config field**
 
-2. **Register the handler** — add to
-   ``cookiecutter_aws_lbd_demo/lambda_function.py``:
+Add a ``lbd_func_my_func`` field to :class:`~cookiecutter_aws_lbd_demo.config.config_00_main.Config`,
+next to the existing fields:
 
-   .. code-block:: python
+.. literalinclude:: ../../../../cookiecutter_aws_lbd_demo/config/config_00_main.py
+   :language: python
+   :lines: 32-34
+   :caption: Reference: config_00_main.py — add lbd_func_my_func in the same pattern
 
-       from cookiecutter_aws_lbd_demo.lbd.my_func import lambda_handler as my_func_handler
+**Step 5 — Load the config**
 
-3. **Add configuration** — add env vars to ``.env.shared``:
+Add config loading for the new function in the ``else`` branch of
+:meth:`~cookiecutter_aws_lbd_demo.one.one_01_config.OneConfigMixin.config`,
+following the existing ``lbd_func_hello`` block:
 
-   .. code-block:: bash
+.. literalinclude:: ../../../../cookiecutter_aws_lbd_demo/one/one_01_config.py
+   :language: python
+   :lines: 39-47
+   :caption: Reference: one_01_config.py — copy this block and replace HELLO with MY_FUNC
 
-       LBD_FUNC_MY_FUNC_SHORT_NAME="my_func"
-       LBD_FUNC_MY_FUNC_HANDLER="my_func_handler"
-       LBD_FUNC_MY_FUNC_TIMEOUT="10"
-       LBD_FUNC_MY_FUNC_MEMORY="128"
+Then pass it to the ``Config(...)`` constructor and add the ``_config``
+back-reference, following these existing lines:
 
-4. **Add the config field** — in
-   :mod:`~cookiecutter_aws_lbd_demo.config.config_00_main`:
+.. literalinclude:: ../../../../cookiecutter_aws_lbd_demo/one/one_01_config.py
+   :language: python
+   :lines: 58-69
+   :caption: Reference: one_01_config.py — add lbd_func_my_func to both places
 
-   .. code-block:: python
+**Step 6 — CDK auto-discovers**
 
-       lbd_func_my_func: LbdFunc | None = Field()
+No CDK changes needed.  The Lambda stack iterates
+:attr:`~cookiecutter_aws_lbd_demo.config.config_00_main.Config.lbd_func_mappings`
+which auto-discovers all :class:`~cookiecutter_aws_lbd_demo.config.config_01_lbd_func.LbdFunc`
+fields on ``Config``.  Only add CDK code if your function needs custom event
+sources or extra IAM permissions.
 
-5. **Load the config** — add to the ``else`` branch of
-   :mod:`~cookiecutter_aws_lbd_demo.one.one_01_config` (``OneConfigMixin.config``):
+**Step 7 — Write tests**
 
-   .. code-block:: python
+Create unit and integration tests following the existing examples:
 
-       lbd_func_my_func = LbdFunc(
-           short_name=os.environ["LBD_FUNC_MY_FUNC_SHORT_NAME"],
-           handler=os.environ["LBD_FUNC_MY_FUNC_HANDLER"],
-           timeout=int(os.environ["LBD_FUNC_MY_FUNC_TIMEOUT"]),
-           memory=int(os.environ["LBD_FUNC_MY_FUNC_MEMORY"]),
-           layers=[os.environ["LBD_FUNC_LAYER_VERSION"]],
-       )
+- Unit test — follow ``tests/lbd/test_lbd_hello.py``:
 
-   And pass it to the ``Config(...)`` constructor, and add the ``_config``
-   back-reference:
+.. literalinclude:: ../../../../tests/lbd/test_lbd_hello.py
+   :language: python
+   :caption: Reference: tests/lbd/test_lbd_hello.py — simplest handler unit test
 
-   .. code-block:: python
+- Integration test — follow ``tests_int/lbd/test_lbd_hello.py``:
 
-       config.lbd_func_my_func._config = config
-
-6. **CDK will auto-discover** — the Lambda stack iterates
-   ``config.lbd_func_mappings`` which auto-discovers all ``LbdFunc`` fields.
-   No CDK changes needed unless the function needs custom event sources or
-   IAM permissions.
-
-7. **Write tests**:
-
-   - ``tests/lbd/test_lbd_my_func.py`` — unit test with mocked services
-   - ``tests_int/lbd/test_lbd_my_func.py`` — integration test against real AWS
+.. literalinclude:: ../../../../tests_int/lbd/test_lbd_hello.py
+   :language: python
+   :caption: Reference: tests_int/lbd/test_lbd_hello.py — real Lambda invocation test
 
 
 Adding a New CDK Stack or Resource
@@ -306,38 +322,47 @@ Adding a New CDK Stack or Resource
 
 Add a new numbered method (e.g., ``s03_create_sqs_queue``) to the
 appropriate stack class and call it from ``__init__``.  Follow the section
-numbering convention (``s01_``, ``s02_``, ``s03_``, …).
+numbering convention visible in the existing stacks:
+
+.. literalinclude:: ../../../../cookiecutter_aws_lbd_demo/cdk/stacks/infra_stack.py
+   :language: python
+   :pyobject: InfraStack.__init__
+   :caption: Reference: infra_stack.py __init__ — numbered method calls
 
 **Adding an entirely new stack:**
 
-1. Create ``cookiecutter_aws_lbd_demo/cdk/stacks/my_stack.py``
-2. Add a ``@cached_property`` to :mod:`~cookiecutter_aws_lbd_demo.cdk.stack_enum`:
+1. Create ``cookiecutter_aws_lbd_demo/cdk/stacks/my_stack.py``.
 
-   .. code-block:: python
+2. Add a ``@cached_property`` to
+   :class:`~cookiecutter_aws_lbd_demo.cdk.stack_enum.StackEnum`, following the
+   existing pattern:
 
-       @cached_property
-       def my_stack(self):
-           from .stacks.my_stack import MyStack
-           return MyStack(scope=self.app, one=one)
+   .. literalinclude:: ../../../../cookiecutter_aws_lbd_demo/cdk/stack_enum.py
+      :language: python
+      :pyobject: StackEnum.lambda_stack
+      :caption: Reference: stack_enum.py — copy this pattern for my_stack
 
-3. Access it in ``cdk/cdk_app.py``:
+3. Access it in ``cdk/cdk_app.py``, following the existing lines:
 
-   .. code-block:: python
-
-       _ = stack_enum.my_stack
+   .. literalinclude:: ../../../../cdk/cdk_app.py
+      :language: python
+      :lines: 8-9
+      :caption: Reference: cdk_app.py — add ``_ = stack_enum.my_stack``
 
 **Adding a Step Function or other AWS resource:**
 
 Step Functions, SQS queues, DynamoDB tables, etc. follow the same pattern —
-create the constructs inside a stack method and wire them up.  For Step
-Functions specifically:
+create the constructs inside a numbered stack method and wire them up.  For
+Step Functions specifically:
 
 1. Define the state machine in a new stack method (e.g.,
    ``s03_create_step_function``) or in a new stack if it's complex.
 2. Grant the Lambda execution role permission to invoke the state machine
-   (or vice versa) in the IAM section of ``infra_stack.py``.
+   (or vice versa) — add a policy statement in
+   :meth:`~cookiecutter_aws_lbd_demo.cdk.stacks.infra_stack.InfraStack.s01_create_iam_roles`.
 3. If the Step Function needs to invoke Lambda functions, use
-   ``config.lbd_func_mappings`` to get function names dynamically.
+   :attr:`~cookiecutter_aws_lbd_demo.config.config_00_main.Config.lbd_func_mappings`
+   to get function names dynamically.
 
 **Exporting resources for other projects:**
 
