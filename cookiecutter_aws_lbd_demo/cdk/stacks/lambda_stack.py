@@ -51,6 +51,8 @@ class LambdaStack(cdk.Stack):
             **kwargs,
         )
 
+        self.s01_create_lambda_functions()
+
     def get_lambda_layers_construct_for_function(
         self,
         lbd_func_config: LbdFunc,
@@ -75,6 +77,7 @@ class LambdaStack(cdk.Stack):
                 layer_version_arn=final_layer_arn,
             )
             layers.append(layer)
+
         return layers
 
     @cached_property
@@ -87,15 +90,11 @@ class LambdaStack(cdk.Stack):
         lbd_func_config: LbdFunc,
     ) -> iam.IRole:
         if lbd_func_config.iam_role is None:
-            """
-            Key = IamRoleForLambdaArn
-            Value = arn:aws:iam::361769586364:role/cookiecutter_aws_lbd_demo-us-east-1-lambda
-            Export name = cookiecutter-aws-lbd-demo-lambda-role-arn = f"{self.one.config.project_name_slug}-lambda-role-arn"
-            """
             return iam.Role.from_role_arn(
                 self,
                 id=f"ImportedLambdaRole{lbd_func_config.short_name_camel}",
-                role_arn=..., # load from export name
+                # match infra_stack.py
+                role_arn=cdk.Fn.import_value(f"{self.one.config.project_name_slug}-lambda-role-arn"),
             )
         # use role managed by external projects
         else:  # pragma: no cover
@@ -146,7 +145,7 @@ class LambdaStack(cdk.Stack):
         # cdk.Tags.of(lbd_func).add("your_key_here", "your_value_here")
         return lbd_func
 
-    def s02_01_create_lambda_functions(self: "LambdaStack"):
+    def s01_create_lambda_functions(self: "LambdaStack"):
         for lbd_func_config in self.one.config.lbd_func_mappings.values():
             lbd_func = self.get_lambda_function_construct_for_function(lbd_func_config)
 

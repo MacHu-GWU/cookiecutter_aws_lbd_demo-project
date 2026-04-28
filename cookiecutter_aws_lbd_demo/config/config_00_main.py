@@ -50,7 +50,7 @@ class Config(
     @property
     def lbd_func_mappings(self) -> dict[str, LbdFunc]:
         result = {}
-        for k in self.model_fields:
+        for k in self.__class__.model_fields:
             v = getattr(self, k)
             if isinstance(v, LbdFunc):
                 result[v.short_name] = v
@@ -60,5 +60,4 @@ class Config(
     def lbd_func_env_vars(self) -> dict[str, str]:
         return {
             "PROJECT_NAME": self.project_name,
-            "AWS_REGION": self.aws_region,
         }

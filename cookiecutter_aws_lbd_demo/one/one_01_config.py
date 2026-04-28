@@ -41,12 +41,18 @@ class OneConfigMixin:
                 handler=os.environ["LBD_FUNC_HELLO_HANDLER"],
                 timeout=int(os.environ["LBD_FUNC_HELLO_TIMEOUT"]),
                 memory=int(os.environ["LBD_FUNC_HELLO_MEMORY"]),
+                layers=[
+                    os.environ["LBD_FUNC_LAYER_VERSION"],
+                ],
             )
             lbd_func_s3sync = LbdFunc(
                 short_name=os.environ["LBD_FUNC_S3_SYNC_SHORT_NAME"],
                 handler=os.environ["LBD_FUNC_S3_SYNC_HANDLER"],
                 timeout=int(os.environ["LBD_FUNC_S3_SYNC_TIMEOUT"]),
                 memory=int(os.environ["LBD_FUNC_S3_SYNC_MEMORY"]),
+                layers=[
+                    os.environ["LBD_FUNC_LAYER_VERSION"],
+                ],
             )
 
         config = Config(

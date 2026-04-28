@@ -6,6 +6,7 @@ from cookiecutter_aws_lbd_demo.cdk.stack_enum import stack_enum
 # Initialize Lambda stack instance to register it with the CDK application
 # This triggers lazy initialization of all stack constructs and dependencies
 _ = stack_enum.infra_stack
+_ = stack_enum.lambda_stack
 
 # Synthesize CDK application to generate CloudFormation templates
 # Produces infrastructure-as-code artifacts in the cdk.out directory
