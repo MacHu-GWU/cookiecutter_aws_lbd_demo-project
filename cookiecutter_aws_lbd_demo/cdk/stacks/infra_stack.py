@@ -1,5 +1,30 @@
 # -*- coding: utf-8 -*-
 
+"""
+Infrastructure stack — long-lived, shared resources (IAM roles, policies).
+
+**Why a separate stack from Lambda?**
+
+CDK deploys each stack independently.  Infrastructure resources like IAM roles
+change **rarely** (only when permissions need updating), while Lambda function
+code changes **frequently** (every feature iteration).  Splitting them into two
+stacks gives us:
+
+1. **Faster deploys** — the common case (code change) only touches the Lambda
+   stack.  No need to diff or re-deploy IAM resources on every push.
+2. **Blast-radius isolation** — a bad Lambda deploy cannot accidentally modify
+   IAM permissions, and vice versa.  Each stack has its own CloudFormation
+   changeset and rollback boundary.
+3. **Cross-stack references** — the infra stack exports the IAM role ARN via
+   ``CfnOutput``.  The Lambda stack imports it with ``Fn.import_value``.  This
+   is a standard CloudFormation pattern for decoupling stacks that share
+   resources.
+
+**Section numbering convention** (``s01_``, ``s02_``, …): methods are prefixed
+with a section number so that ``__init__`` reads like a table of contents and
+the execution order is unambiguous.
+"""
+
 import aws_cdk as cdk
 from aws_cdk import aws_iam as iam
 

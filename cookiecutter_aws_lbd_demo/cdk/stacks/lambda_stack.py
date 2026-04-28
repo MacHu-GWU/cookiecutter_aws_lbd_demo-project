@@ -1,7 +1,26 @@
 # -*- coding: utf-8 -*-
 
 """
-Lambda stack function deployment mixin with versioning and event source configuration.
+Lambda stack — frequently-deployed compute resources (functions, layers, event sources).
+
+This stack is the counterpart to ``infra_stack.py`` (see its module docstring
+for why they are separate).  It owns everything that changes on a typical
+deploy: Lambda function code, layer versions, environment variables, and event
+source mappings.
+
+**Key design decisions:**
+
+- **Source code from S3** — the function code is not bundled inline.  Instead,
+  ``build_lambda_source`` (in ``one_04_devops.py``) uploads a zip to S3, and
+  this stack reads the S3 URI from a local file
+  (``path_enum.path_lambda_source_s3uri``).  This keeps the CDK template small
+  and makes artifact versioning explicit.
+
+- **IAM role imported, not created** — the role ARN is imported from the infra
+  stack via ``Fn.import_value``, enforcing the separation described above.
+
+- **Section numbering** (``s01_``, ``s02_02_``): execution order of construct
+  creation is encoded in the method prefix so ``__init__`` reads top-down.
 """
 
 import typing as T
