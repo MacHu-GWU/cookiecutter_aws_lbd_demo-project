@@ -72,12 +72,3 @@ class LbdFunc(BaseModel):
         Example: ``MyFunc``
         """
         return under2camel(slugify(self.short_name, delim="_"))
-
-    @property
-    def target_live_version1(self) -> str:
-        """
-        Get the lambda version you want to set as ALIAS 'LIVE'.
-        If the live version is not specified, use the '$LATEST' version.
-        :return:
-        """
-        return LATEST if self.live_version1 is None else self.live_version1

@@ -4,7 +4,6 @@ import json
 import base64
 
 from cookiecutter_aws_lbd_demo.api import one
-from cookiecutter_aws_lbd_demo.logger import logger
 
 
 def test(

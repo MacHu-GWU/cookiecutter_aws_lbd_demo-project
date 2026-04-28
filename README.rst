@@ -50,7 +50,33 @@ Welcome to ``cookiecutter_aws_lbd_demo`` Documentation
 .. image:: https://cookiecutter-aws-lbd-demo.readthedocs.io/en/latest/_static/cookiecutter_aws_lbd_demo-logo.png
     :target: https://cookiecutter-aws-lbd-demo.readthedocs.io/en/latest/
 
-Documentation for ``cookiecutter_aws_lbd_demo``.
+
+About
+------------------------------------------------------------------------------
+
+This project is a **simplified** best-practice template for deploying AWS Lambda functions. It is designed for projects that don't need the full complexity of an enterprise-grade deployment pipeline.
+
+We also maintain a production-grade template that includes everything an enterprise team would need (multi-environment, canary deployments, CI/CD pipelines, etc.). However, many projects don't require that level of complexity — this simplified version covers the essentials and gets you up and running quickly.
+
+
+What's Included
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **AWS CDK** for infrastructure deployment
+- **Unit Tests and Integration Tests**
+- **Lambda Layer** support
+- **Local script deployment** (no CI/CD pipeline required)
+- **Environment variables** managed via Lambda Environment Variables and ``.env`` files
+
+
+What's Intentionally Left Out
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **No multi-environment setup** — single environment only
+- **No Lambda alias / canary deployment**
+- **No private repository dependencies**
+- **No GitHub Actions CI/CD** — deploy directly from local scripts
+- **No SSM Parameter Store config management** — uses simple Lambda Environment Variables instead
 
 
 .. _install:

@@ -30,7 +30,6 @@ def test():
         _ = lbd_func.short_name_slug
         _ = lbd_func.short_name_snake
         _ = lbd_func.short_name_camel
-        _ = lbd_func.target_live_version1
 
 
 if __name__ == "__main__":
