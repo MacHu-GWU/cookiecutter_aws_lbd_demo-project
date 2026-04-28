@@ -1,5 +1,19 @@
 # -*- coding: utf-8 -*-
 
+"""
+Unit test for the ``s3sync`` Lambda function using mocked AWS (moto).
+
+Demonstrates the ``BaseMockAwsTest`` pattern for tests that need AWS services:
+
+1. Set ``use_mock = True`` to use moto (set ``False`` for integration testing).
+2. Override ``setup_class_post_hook`` to create fixtures (S3 buckets, seed data).
+3. Test the business logic by calling the handler's ``sync()`` method directly,
+   passing the mocked ``s3_client`` so it hits moto instead of real AWS.
+
+This test verifies that a file written to the source prefix is correctly copied
+to the target prefix.
+"""
+
 from cookiecutter_aws_lbd_demo.lbd.s3sync import Input
 
 from cookiecutter_aws_lbd_demo.one.api import one

@@ -1,5 +1,19 @@
 # -*- coding: utf-8 -*-
 
+"""
+Integration test for the ``hello`` Lambda function.
+
+Invokes the **deployed** Lambda function via ``lambda_client.invoke()`` and
+validates the response payload.  Tests two cases:
+
+1. Normal input (``{"name": "bob"}``) — expects ``"hello bob"``.
+2. Missing input (``{}``) — expects the default ``"hello Mr X"``.
+
+This test exercises the full Lambda lifecycle: cold/warm start, handler
+routing through ``lambda_function.py``, Pydantic validation, and the
+``LogResult`` output.
+"""
+
 import json
 import base64
 

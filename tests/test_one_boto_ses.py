@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
 
+"""
+Integration-style test for the ``One`` singleton's boto session.
+
+Calls ``sts:GetCallerIdentity`` to verify that the boto session is correctly
+configured and that AWS credentials are available.  This test requires real
+AWS credentials (via the profile configured in ``.env``) and is **not** mocked.
+"""
+
 from cookiecutter_aws_lbd_demo.one.api import one
 
 

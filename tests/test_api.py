@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
 
+"""
+Smoke test for the public API module.
+
+Verifies that ``cookiecutter_aws_lbd_demo.api`` can be imported without errors.
+This catches broken re-exports, missing dependencies, and import-time
+exceptions early — before any functional tests run.
+"""
+
 from cookiecutter_aws_lbd_demo import api
 
 

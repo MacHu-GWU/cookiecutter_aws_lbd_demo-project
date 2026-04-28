@@ -1,5 +1,20 @@
 # -*- coding: utf-8 -*-
 
+"""
+Integration test for the ``s3sync`` Lambda function (S3 event-driven).
+
+This is the most complex integration test in the project because it validates
+an **asynchronous** pipeline:
+
+1. Write a file to the S3 *source* prefix.
+2. S3 fires an event notification → invokes the ``s3sync`` Lambda.
+3. Lambda copies the file to the S3 *target* prefix.
+4. Poll the target prefix until the file appears (or timeout after ~10 s).
+
+The polling loop is intentional — S3 event delivery and Lambda execution are
+not instantaneous, so the test retries several times before failing.
+"""
+
 import time
 import uuid
 

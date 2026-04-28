@@ -1,5 +1,15 @@
 # -*- coding: utf-8 -*-
 
+"""
+Unit test for the ``Config`` and ``LbdFunc`` data models.
+
+Exercises every property on ``Config`` and ``LbdFunc`` to ensure that naming
+derivations (snake_case, slug, camelCase), computed values, and the
+``_config`` back-reference all work correctly.  This test acts as a regression
+guard — if a property raises or returns an unexpected type, it will fail here
+before causing a confusing error during CDK synthesis or deployment.
+"""
+
 from cookiecutter_aws_lbd_demo.one.api import one
 
 
