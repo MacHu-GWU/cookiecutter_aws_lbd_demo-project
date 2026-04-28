@@ -4,6 +4,7 @@
 Boto session management mixin for AWS service access and credential handling.
 """
 
+import os
 import typing as T
 from functools import cached_property
 
@@ -40,6 +41,8 @@ class OneBotoSesMixin:  # pragma: no cover
 
     @cached_property
     def aws_account_alias(self: "One") -> str:
+        if "AWS_ACCOUNT_ALIAS" in os.environ:
+            return os.environ["AWS_ACCOUNT_ALIAS"]
         try:
             res = self.boto_ses.client("iam").list_account_aliases()
             return res["AccountAliases"][0]

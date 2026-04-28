@@ -83,7 +83,15 @@ class LambdaStack(cdk.Stack):
 
     @cached_property
     def lambda_function_env_vars(self: "LambdaStack") -> dict[str, str]:
-        env_vars = self.one.config.lbd_func_env_vars
+        env_vars = dict(self.one.config.lbd_func_env_vars)
+        # AWS_ACCOUNT_ALIAS is baked in at CDK synthesis time (runs locally with full IAM
+        # permissions) rather than being resolved at Lambda runtime. This avoids an
+        # iam:ListAccountAliases API call inside the Lambda handler, which was observed to
+        # hang for the full function timeout — likely due to cold-start connection overhead
+        # to the IAM global endpoint. The alias is static per deployment, so computing it
+        # once at synth time and passing it as an env var is both correct and efficient.
+        # See one_02_boto_ses.py: aws_account_alias reads from this env var when present.
+        env_vars["AWS_ACCOUNT_ALIAS"] = self.one.aws_account_alias
         return env_vars
 
     def get_iam_role_construct_for_function(
