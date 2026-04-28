@@ -1,5 +1,19 @@
 # -*- coding: utf-8 -*-
 
+"""
+Top-level project configuration model.
+
+``Config`` aggregates all settings needed for CDK deployment and local
+development: project naming, AWS region, Python version, and per-function
+Lambda configurations.  It inherits from ``LbdFuncDeployMixin`` for
+deployment-specific computed properties (e.g., ``lambda_layer_name``).
+
+Properties like ``project_name_snake``, ``project_name_slug``, and
+``cloudformation_stack_name`` derive naming variants from a single
+``project_name`` source of truth — change it once, and every CloudFormation
+resource name, S3 prefix, and IAM role name updates consistently.
+"""
+
 from pydantic import BaseModel
 from pydantic import Field
 

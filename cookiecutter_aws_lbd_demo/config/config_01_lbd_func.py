@@ -1,7 +1,28 @@
 # -*- coding: utf-8 -*-
 
 """
-Lambda function configurations.
+Lambda function configuration model.
+
+Each Lambda function in this project is represented by a ``LbdFunc`` instance
+that holds its deployment parameters (timeout, memory, layers, etc.) and
+provides computed naming variants (snake_case, slug, CamelCase) used by CDK
+constructs and CloudFormation logical IDs.
+
+**``_config`` back-reference — why a ``PrivateAttr``?**
+
+A ``LbdFunc`` needs access to its parent ``Config`` to compute derived values
+like the full function name (``{project_name_snake}-{short_name}``).  But
+Pydantic models are validated at construction time, and the parent ``Config``
+is still being built when its child ``LbdFunc`` fields are validated — so the
+back-reference cannot be a constructor argument.
+
+Instead, ``_config`` is declared as a ``PrivateAttr`` (excluded from Pydantic
+validation) and assigned *after* construction in ``one_01_config.py``::
+
+    config.lbd_func_hello._config = config
+
+This is only needed locally (not on Lambda), because on Lambda the ``LbdFunc``
+objects are ``None`` — the Lambda handler doesn't need deployment metadata.
 """
 
 import typing as T

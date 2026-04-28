@@ -1,5 +1,17 @@
 # -*- coding: utf-8 -*-
 
+"""
+Vendored pytest + coverage helper (originally from ``fixa.pytest_cov_helper``).
+
+Provides ``run_unit_test`` and ``run_cov_test`` — thin wrappers around
+``pytest`` and ``pytest-cov`` CLI commands that let you run a single test file
+and measure coverage scoped to a specific module.
+
+This module is used by the ``if __name__ == "__main__"`` block at the bottom of
+every test file.  See ``tests/helper.py`` for the project-specific wrappers
+that pre-fill ``root_dir`` and ``htmlcov_dir``.
+"""
+
 import os
 import sys
 import contextlib
