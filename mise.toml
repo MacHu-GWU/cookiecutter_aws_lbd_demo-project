@@ -128,7 +128,7 @@ cdk deploy --all --require-approval never
 [tasks.cdk-up]
 description = "🟢 Deploy CDK stacks to AWS (runs cdk deploy, skip approval)"
 dir = "cdk"
-depends = ["inst"]
+depends = ["inst", "lambda-source-deploy"]
 run = "cdk deploy --all --require-approval never --profile $LOCAL_AWS_PROFILE"
 
 [tasks.cdk-down]
