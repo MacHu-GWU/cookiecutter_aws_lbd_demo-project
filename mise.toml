@@ -47,13 +47,13 @@ uv export --format requirements-txt --extra mise --no-emit-project --no-hashes -
 
 # Testing
 [tasks.test]
-description = "🧪 Run unit tests using pytest (scans test files automatically)"
-run = ".venv/bin/pytest tests"
+description = "🧪 Run CDK integration tests using pytest (no coverage, avoids aws-cdk import overhead)"
+run = ".venv/bin/pytest tests/cdk -s --tb=native"
 depends = ["inst"]
 
 [tasks.cov]
 description = "🧪📊 Run unit tests with code coverage using pytest (generates HTML report in htmlcov/)"
-run = ".venv/bin/pytest tests -s --tb=native --cov=cookiecutter_aws_lbd_demo --cov-report term-missing --cov-report html:htmlcov"
+run = ".venv/bin/pytest tests --ignore=tests/cdk -s --tb=native --cov=cookiecutter_aws_lbd_demo --cov-report term-missing --cov-report html:htmlcov"
 depends = ["inst"]
 
 [tasks.view-cov]
