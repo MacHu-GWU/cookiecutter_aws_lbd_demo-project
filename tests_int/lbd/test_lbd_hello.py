@@ -21,7 +21,6 @@ def test(
     log = base64.b64decode(response["LogResult"].encode("utf-8")).decode("utf-8")
     # print(log)  # for debug only
     result: dict = json.loads(response["Payload"].read().decode("utf-8"))
-    print(result)
     assert result["message"] == "hello bob"
 
     # test case 2
