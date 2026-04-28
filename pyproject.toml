@@ -46,6 +46,7 @@ classifiers = [
 # ------------------------------------------------------------------------------
 dependencies = [
     "vislog>=0.1.2,<1.0.0",
+    "soft-deps>=0.1.1,<1.0.0",
     "boltons>=25.0.0,<26.0.0", # Utility functions for Python
     "which-runtime>=0.1.2,<1.0.0",
     "boto3>=1.42.95,<2.0.0",

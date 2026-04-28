@@ -400,6 +400,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "python-dotenv" },
     { name = "s3pathlib" },
+    { name = "soft-deps" },
     { name = "vislog" },
     { name = "which-runtime" },
 ]
@@ -459,6 +460,7 @@ requires-dist = [
     { name = "rstobj", marker = "extra == 'doc'", specifier = "==2.0.0" },
     { name = "s3pathlib", specifier = ">=2.3.6,<3.0.0" },
     { name = "simple-aws-lambda", marker = "extra == 'dev'", specifier = ">=0.2.2,<1.0.0" },
+    { name = "soft-deps", specifier = ">=0.1.1,<1.0.0" },
     { name = "sphinx", marker = "extra == 'doc'", specifier = ">=7.4.7,<8.0.0" },
     { name = "sphinx-copybutton", marker = "extra == 'doc'", specifier = ">=0.5.2,<1.0.0" },
     { name = "sphinx-design", marker = "extra == 'doc'", specifier = ">=0.6.1,<1.0.0" },

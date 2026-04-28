@@ -52,6 +52,7 @@ class LambdaStack(cdk.Stack):
         )
 
         self.s01_create_lambda_functions()
+        self.s02_02_configure_s3_event_source()
 
     def get_lambda_layers_construct_for_function(
         self,
@@ -146,50 +147,34 @@ class LambdaStack(cdk.Stack):
         return lbd_func
 
     def s01_create_lambda_functions(self: "LambdaStack"):
+        self.lambda_func_mappings: dict[str, lambda_.Function] = dict()
         for lbd_func_config in self.one.config.lbd_func_mappings.values():
             lbd_func = self.get_lambda_function_construct_for_function(lbd_func_config)
+            self.lambda_func_mappings[lbd_func_config.short_name] = lbd_func
 
-    # def s02_02_configure_s3_event_source(self: "LambdaStack"):
-    #     # ----------------------------------------------------------------------
-    #     # Configure S3 Notification
-    #     #
-    #     # note:
-    #     # based on this issue: https://github.com/aws/aws-cdk/issues/23940
-    #     # it is impossible to use S3Bucket that is not defined in this stack
-    #     # for ``aws_cdk.aws_lambda_event_sources.S3EventSource``
-    #     # this is the only choice for now
-    #     # ----------------------------------------------------------------------
-    #     bucket = s3.Bucket.from_bucket_attributes(
-    #         self,
-    #         "ImportedBucket",
-    #         bucket_arn=f"arn:aws:s3:::{self.conf_env.s3dir_source.bucket}",
-    #     )
-    #
-    #     # --- use latest version
-    #     # bucket.add_event_notification(
-    #     #     s3.EventType.OBJECT_CREATED,
-    #     #     s3_notifications.LambdaDestination(
-    #     #         self.lambda_func_mapper[self.env.lbd_s3sync.name][KEY_FUNC],
-    #     #     ),
-    #     #     s3.NotificationKeyFilter(
-    #     #         prefix=f"{self.env.s3dir_source.key}",
-    #     #     ),
-    #     # )
-    #     #
-    #     # --- use lambda alias
-    #     bucket.add_event_notification(
-    #         s3.EventType.OBJECT_CREATED,
-    #         s3_notifications.LambdaDestination(
-    #             lambda_.Function.from_function_attributes(
-    #                 self,
-    #                 f"LambdaAliasAttribute{self.conf_env.lbd_s3sync.short_name_camel}",
-    #                 function_arn=self.lambda_func_mapper[
-    #                     self.conf_env.lbd_s3sync.name
-    #                 ].func.function_arn,
-    #                 same_environment=True,
-    #             ),
-    #         ),
-    #         s3.NotificationKeyFilter(
-    #             prefix=f"{self.conf_env.s3dir_source.key}",
-    #         ),
-    #     )
+    def s02_02_configure_s3_event_source(self: "LambdaStack"):
+        # ----------------------------------------------------------------------
+        # Configure S3 Notification
+        #
+        # note:
+        # based on this issue: https://github.com/aws/aws-cdk/issues/23940
+        # it is impossible to use S3Bucket that is not defined in this stack
+        # for ``aws_cdk.aws_lambda_event_sources.S3EventSource``
+        # this is the only choice for now
+        # ----------------------------------------------------------------------
+        bucket = s3.Bucket.from_bucket_attributes(
+            self,
+            id="ImportedBucket",
+            bucket_arn=f"arn:aws:s3:::{self.one.s3dir_source.bucket}",
+        )
+
+        # --- use latest version
+        bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED,
+            s3_notifications.LambdaDestination(
+                self.lambda_func_mappings[self.one.config.lbd_func_s3sync.short_name],
+            ),
+            s3.NotificationKeyFilter(
+                prefix=f"{self.one.s3dir_source.key}",
+            ),
+        )
