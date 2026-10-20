@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 """
-Public API for the ``config`` subpackage.
-
-Import ``Config`` and ``LbdFunc`` from here instead of reaching into the
-numbered internal modules.
+Public API of the ``config`` subpackage; import from here instead of the numbered modules.
 """
 
+from .config_00_main import CONFIG_SSM_PARAM_NAME_VAR
+from .config_00_main import CONFIG_MAX_AGE
+from .config_00_main import LambdaFunction
 from .config_00_main import Config
-from .config_01_lbd_func import LbdFunc

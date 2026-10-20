@@ -1,0 +1,7 @@
+// Copy to config/config-dev.json5 (committed; same for tst / prd) and fill in real values.
+// Settings of one environment; overrides config-shared.json5.
+{
+  aws_region: "us-east-1",
+  s3_bucket_data: "my-data-bucket",
+  lambda_layer_version: 1,
+}

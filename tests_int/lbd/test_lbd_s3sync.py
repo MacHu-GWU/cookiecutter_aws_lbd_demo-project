@@ -27,19 +27,19 @@ def test():
     # before
     # --------------------------------------------------------------------------
     basename = "test.txt"
-    s3path_source = one.s3dir_source.joinpath(basename)
-    s3path_target = one.s3dir_target.joinpath(basename)
+    s3path_source = one.config.s3dir_source.joinpath(basename)
+    s3path_target = one.config.s3dir_target.joinpath(basename)
 
     logger.info(f"preview s3 source: {s3path_source.console_url}")
     logger.info(f"preview s3 target: {s3path_target.console_url}")
 
-    s3path_target.delete(bsm=one.s3_client)
+    s3path_target.delete(s3_client=one.s3_client)
     content = uuid.uuid4().hex
-    s3path_source.write_text(content, bsm=one.s3_client)
+    s3path_source.write_text(content, s3_client=one.s3_client)
 
     # Check the target immediately after writing to source
     # S3 event and LBD should not have propagated yet
-    assert s3path_target.exists(bsm=one.s3_client) is False
+    assert s3path_target.exists(s3_client=one.s3_client) is False
 
     # --------------------------------------------------------------------------
     # after
@@ -49,8 +49,8 @@ def test():
     succeeded = False
     for i in range(n):
         time.sleep(1)
-        if s3path_target.exists(bsm=one.s3_client):
-            assert s3path_target.read_text(bsm=one.s3_client) == content
+        if s3path_target.exists(s3_client=one.s3_client):
+            assert s3path_target.read_text(s3_client=one.s3_client) == content
             succeeded = True
             break
     if succeeded is False:

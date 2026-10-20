@@ -3,6 +3,8 @@ cookiecutter_aws_lbd_demo.egg-info/
 docs/source/**/index.md
 .claude/claude-code-message*
 tmp/
+cdk/cdk.out/
+config/config-*-secret.json5
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

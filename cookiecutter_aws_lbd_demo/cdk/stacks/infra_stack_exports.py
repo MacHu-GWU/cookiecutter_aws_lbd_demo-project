@@ -1,219 +1,106 @@
 # -*- coding: utf-8 -*-
 
 """
-CloudFormation Stack Exports Interface
+Read the outputs of the infra stack, from this project or from any other.
 
-This module provides a standardized interface for external projects to access CloudFormation 
-stack outputs and exports maintained by the current project. This is a good design pattern 
-that solves common problems when accessing CloudFormation resources across projects.
+**Copy this file as is.** It imports only the standard library (and a type stub
+when type checking), so another project that needs a value of this stack, such as
+:attr:`InfraStackExports.iam_role_for_lambda_arn`, copies this one file instead of depending on this
+project or guessing output names::
 
-**Core Values:**
-
-1. **Avoid Reverse Engineering**: Other projects don't need to guess or reverse engineer 
-   to determine available output value names
-2. **Type Safety**: Provides typed property methods to access stack outputs, reducing 
-   spelling errors
-3. **Copy-Pasteable**: External projects can directly copy and paste this file into 
-   their own codebase
-4. **Unified Interface**: Whether accessing OutputKey or ExportName, both use unified 
-   property methods
-
-**Use Cases:**
-
-When your project needs to access AWS resources maintained by other projects, you don't need to:
-
-- Check source code to find out available output values
-- Manually construct export names or output keys
-- Worry about errors caused by naming changes
-
-**How It Works:**
-
-This module works in conjunction with the following files:
-
-- lbd_stack_00_main.py: Defines the main Lambda stack structure
-- lbd_stack_01_iam.py: Defines IAM-related resources and creates CloudFormation outputs and exports
-
-In lbd_stack_01_iam.py, we create CloudFormation outputs:
-
-.. code-block:: python
-
-    self.output_iam_role_for_lambda_arn = cdk.CfnOutput(
-        self,
-        "IamRoleForLambdaArn",  # OutputKey
-        value=self.iam_role_for_lambda.role_arn,
-        export_name=f"{self.conf_env.prefix_name_slug}-lambda-role-arn",  # ExportName
-    )
-
-Then provide corresponding property methods in this module:
-
-.. code-block:: python
-
-    @cached_property
-    def iam_role_for_lambda_arn(self) -> str:
-        export_key = f"{self.prefix_name_slug}-lambda-role-arn"
-        return self.exports[export_key]
-
-**Typical Usage:**
-
-.. code-block:: python
-
-    # In external projects
     import boto3
-    from some_project.exports import StackExports
-    
-    # Load stack exports
-    cf_client = boto3.client("cloudformation")
-    stack_exports = StackExports.load(cf_client=cf_client, env_name="dev")
-    
-    # Type-safe access to resource ARN
-    lambda_role_arn = stack_exports.iam_role_for_lambda_arn
-    
-    # Use in your own CDK stack
-    imported_role = iam.Role.from_role_arn(
-        self, "ImportedLambdaRole", 
-        role_arn=lambda_role_arn
-    )
 
-**Extension Guide:**
+    cf_client = boto3.Session(profile_name="my_dev_profile").client("cloudformation")
+    exports = InfraStackExports.load(cf_client=cf_client, env_name="dev")
+    print(exports.iam_role_for_lambda_arn)
 
-When you need to add new export values:
+The stack names below are literal values, not built from the config, so the file
+stays self-contained. ``tests_int/`` checks them, and every output key, against
+the deployed stack.
 
-1. Create CfnOutput in the corresponding stack file (e.g., lbd_stack_01_iam.py)
-2. Add corresponding @cached_property method in this file
-3. External projects update this file to gain new access capabilities
-
-This pattern is particularly suitable for infrastructure code management in microservice 
-architectures, where each service can independently maintain its own infrastructure while 
-providing standardized interfaces for other services to use.
+To add a value: add a ``cdk.CfnOutput`` to the stack, then a property here that
+reads it by its output key, and add the property to :meth:`InfraStackExports.to_dict`.
 """
 
 import typing as T
 import dataclasses
-from functools import cached_property
 
-if T.TYPE_CHECKING:
+if T.TYPE_CHECKING:  # pragma: no cover
     from mypy_boto3_cloudformation.client import CloudFormationClient
-    from mypy_boto3_cloudformation.type_defs import DescribeStacksOutputTypeDef
 
-# this value has to match the ``config.project_name``
-project_name = "cookiecutter_aws_lbd_demo"
-project_name_snake = project_name.replace("-", "_")
-project_name_slug = project_name.replace("_", "-")
-stack_name = f"{project_name_slug}-infra"
+STACK_NAMES: dict[str, str] = {
+    "dev": "cookiecutter-aws-lbd-demo-dev-infra",
+    "tst": "cookiecutter-aws-lbd-demo-tst-infra",
+    "prd": "cookiecutter-aws-lbd-demo-prd-infra",
+}
+"""
+The CloudFormation stack name of each environment.
+"""
 
 
 @dataclasses.dataclass
-class StackExports:
+class InfraStackExports:
     """
-    CloudFormation Stack Exports Accessor
-
-    This class provides a type-safe interface to access CloudFormation stack outputs and exports.
-    It encapsulates interactions with the CloudFormation API and provides caching mechanisms
-    to improve performance.
-
-    **Main Features:**
-
-    - Automatically construct stack name from environment name
-    - Cache CloudFormation API responses for better performance
-    - Provide type-safe property methods to access specific export values
-    - Support accessing both OutputKey and ExportName approaches
-
-    **Usage Examples:**
-
-    .. code-block:: python
-
-        import boto3
-
-        # Create CloudFormation client
-        cf_client = boto3.client("cloudformation")
-
-        # Load stack exports for specific environment
-        stack_exports = StackExports.load(cf_client=cf_client, env_name="dev")
-
-        # Access specific export values
-        lambda_role_arn = stack_exports.iam_role_for_lambda_arn
-        print(f"Lambda IAM Role ARN: {lambda_role_arn}")
-
-        # Or directly access raw output/export dictionaries
-        all_outputs = stack_exports.outputs  # OutputKey -> OutputValue
-        all_exports = stack_exports.exports  # ExportName -> ExportValue
-
-    **Internal Implementation Details:**
-
-    - env_name: Environment name (e.g., "dev", "test", "prod") used to construct stack name
-    - response: Cached response from CloudFormation describe_stacks API to avoid repeated calls
-    - All property access uses @cached_property decorator for caching optimization
-
-    **Steps to Extend New Export Values:**
-
-    1. Add CfnOutput in the corresponding stack mixin
-    2. Add corresponding @cached_property method in this class
-    3. Ensure property names are descriptive and follow snake_case naming convention
+    The outputs of one deployed infra stack. Create it with :meth:`load`.
     """
 
-    response: "DescribeStacksOutputTypeDef" = dataclasses.field(init=False)
+    # fmt: off
+    env_name: str = dataclasses.field()  #: The environment, such as ``dev``.
+    stack_name: str = dataclasses.field()  #: The CloudFormation stack name.
+    outputs: dict[str, str] = dataclasses.field()  #: Every output, ``OutputKey`` to ``OutputValue``.
+    exports: dict[str, str] = dataclasses.field()  #: Every exported output, ``ExportName`` to ``OutputValue``.
+    # fmt: on
+
+    @classmethod
+    def from_describe_stacks_response(
+        cls,
+        env_name: str,
+        response: dict[str, T.Any],
+    ) -> "InfraStackExports":
+        """
+        Build it from the response of ``cloudformation.describe_stacks``.
+        """
+        stack = response["Stacks"][0]
+        outputs = {}
+        exports = {}
+        for dct in stack.get("Outputs", []):
+            outputs[dct["OutputKey"]] = dct["OutputValue"]
+            if "ExportName" in dct:
+                exports[dct["ExportName"]] = dct["OutputValue"]
+        return cls(
+            env_name=env_name,
+            stack_name=stack["StackName"],
+            outputs=outputs,
+            exports=exports,
+        )
 
     @classmethod
     def load(
         cls,
         cf_client: "CloudFormationClient",
-    ):
+        env_name: str,
+    ) -> "InfraStackExports":  # pragma: no cover
         """
-        Load stack export information from CloudFormation for specified environment
+        Read the outputs of the stack of ``env_name`` with one ``describe_stacks`` call.
 
-        This factory method creates a StackExports instance and loads stack information
-        from AWS CloudFormation service. It automatically constructs the stack name
-        based on project name and environment name, then calls the describe_stacks API.
-
-        :param cf_client: boto3 CloudFormation client instance with permission to read stack info
-
-        :return: StackExports instance with loaded stack information
+        :param cf_client: a CloudFormation client of the account of ``env_name``.
+        :param env_name: a key of :data:`STACK_NAMES`, such as ``dev``.
         """
-        stack_exports = cls()
-        response = cf_client.describe_stacks(StackName=stack_name)
-        stack_exports.response = response
-        return stack_exports
+        response = cf_client.describe_stacks(StackName=STACK_NAMES[env_name])
+        return cls.from_describe_stacks_response(env_name=env_name, response=response)
 
-    @cached_property
-    def outputs(self) -> dict[str, str]:
-        output_list = self.response["Stacks"][0]["Outputs"]
-        outputs = {dct["OutputKey"]: dct["OutputValue"] for dct in output_list}
-        return outputs
-
-    @cached_property
-    def exports(self) -> dict[str, str]:
-        output_list = self.response["Stacks"][0]["Outputs"]
-        exports = {dct["ExportName"]: dct["OutputValue"] for dct in output_list}
-        return exports
-
-    # --------------------------------------------------------------------------
-    # access output value or export value
-    # --------------------------------------------------------------------------
-    # @cached_property
-    # def iam_role_for_lambda_arn(self) -> str:
-    #     """
-    #     Get the IAM Role ARN used by Lambda functions.
-    #     """
-    #     output_key = f"IamRoleForLambdaArn"
-    #     return self.outputs[output_key]
-
-    @cached_property
+    @property
     def iam_role_for_lambda_arn(self) -> str:
         """
-        Get the IAM Role ARN used by Lambda functions.
+        The ARN of the Lambda execution role.
         """
-        export_key = f"{project_name_slug}-lambda-role-arn"
-        return self.exports[export_key]
+        return self.outputs["IamRoleForLambdaArn"]
 
-
-# ------------------------------------------------------------------------------
-# Usage example
-# ------------------------------------------------------------------------------
-if __name__ == "__main__":
-    import os
-    import boto3
-
-    boto_ses = boto3.Session(profile_name=os.environ["LOCAL_AWS_PROFILE"])
-    cf_client = boto_ses.client("cloudformation")
-    stack_exports = StackExports.load(cf_client=cf_client)
-    print(stack_exports.iam_role_for_lambda_arn)
+    def to_dict(self) -> dict[str, str]:
+        """
+        Every value this module provides, by property name. Reading them all
+        raises ``KeyError`` if the deployed stack lacks one of the outputs.
+        """
+        return {
+            "iam_role_for_lambda_arn": self.iam_role_for_lambda_arn,
+        }

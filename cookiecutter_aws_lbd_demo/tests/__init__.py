@@ -13,4 +13,5 @@ import::
         run_cov_test(__file__, "cookiecutter_aws_lbd_demo.some_module")
 """
 
-from .helper import run_unit_test, run_cov_test
+from .helper import run_unit_test
+from .helper import run_cov_test

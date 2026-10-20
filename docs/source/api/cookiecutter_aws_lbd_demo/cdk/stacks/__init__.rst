@@ -12,5 +12,6 @@ sub packages and modules
 
     infra_stack <infra_stack>
     infra_stack_exports <infra_stack_exports>
-    lambda_stack <lambda_stack>
+    lbd_stack <lbd_stack>
+    lbd_stack_exports <lbd_stack_exports>
     

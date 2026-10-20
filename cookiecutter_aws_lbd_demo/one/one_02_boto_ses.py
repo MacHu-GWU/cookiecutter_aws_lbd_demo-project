@@ -1,62 +1,116 @@
 # -*- coding: utf-8 -*-
 
 """
-Boto session management mixin for AWS service access and credential handling.
+The AWS session part of ``one``:
+
+- :attr:`~OneBotoSesMixin.bsm`, the boto session of the current environment,
+  and the clients built from it. The account and region are
+  ``one.config.aws_account_id`` / ``one.config.aws_region``.
+- :attr:`~OneBotoSesMixin.bsm_devops`, the boto session of the DEVOPS account,
+  which owns the Lambda layer. Only deploy scripts on a developer machine use it.
 """
 
-import os
+from __future__ import annotations
+
 import typing as T
+import os
 from functools import cached_property
 
 import boto3
+from boto_session_manager.api import BotoSesManager
 
-from ..runtime import runtime
+from ..runtime import RuntimeNameEnum
 
 if T.TYPE_CHECKING:  # pragma: no cover
+    from mypy_boto3_s3.client import S3Client
+    from mypy_boto3_lambda.client import LambdaClient
+    from mypy_boto3_cloudformation.client import CloudFormationClient
+    from mypy_boto3_ssm.client import SSMClient
     from .one_00_main import One
 
 
-class OneBotoSesMixin:  # pragma: no cover
+DEVOPS = "devops"
+"""
+The name of the DEVOPS account in :func:`get_aws_profile_env_var`. It is not an
+environment: no stack is deployed to it.
+"""
+
+
+def get_aws_profile_env_var(env_name: str) -> str:
     """
-    Mixin providing lazy-loaded boto session management and AWS console access.
+    The environment variable that names the local AWS profile of an environment,
+    such as ``AWS_PROFILE_FOR_DEV`` for ``dev``, or ``AWS_PROFILE_FOR_DEVOPS`` for
+    :data:`DEVOPS`; mise loads it from ``.env``.
+    """
+    return f"AWS_PROFILE_FOR_{env_name.upper()}"
+
+
+class OneBotoSesMixin:
+    """
+    Lazily built boto sessions and AWS clients.
     """
 
-    @cached_property
-    def boto_ses(self: "One") -> boto3.Session:
-        if runtime.is_aws_lambda:
-            return boto3.Session(region_name=self.config.aws_region)
-        else:
-            return boto3.Session(
-                profile_name=self.config.local_aws_profile,
-                region_name=self.config.aws_region,
-            )
+    def _new_bsm(self: One, name: str) -> BotoSesManager:  # pragma: no cover
+        """
+        On the local runtime use the profile ``AWS_PROFILE_FOR_<NAME>`` when it is
+        set. Otherwise follow the standard credential chain, as a CI runner or a
+        Lambda function would.
+        """
+        region_name = self.config.aws_region
+        if self.runtime.current_runtime_name() == RuntimeNameEnum.local.value:
+            profile_name = os.environ.get(get_aws_profile_env_var(name), "")
+            if profile_name:
+                return BotoSesManager(
+                    profile_name=profile_name, region_name=region_name
+                )
+        return BotoSesManager(region_name=region_name)
 
     @cached_property
-    def aws_region(self: "One") -> str:
-        return self.config.aws_region
+    def bsm(self: One) -> BotoSesManager:  # pragma: no cover
+        """
+        The boto session of the current environment, in the region of its config;
+        creating it makes no AWS call.
+        """
+        return self._new_bsm(self.env.current_env_name)
 
     @cached_property
-    def aws_account_id(self: "One") -> str:
-        return self.boto_ses.client("sts").get_caller_identity()["Account"]
+    def bsm_devops(self: One) -> BotoSesManager:  # pragma: no cover
+        """
+        The boto session of the DEVOPS account, from ``AWS_PROFILE_FOR_DEVOPS``.
+        """
+        return self._new_bsm(DEVOPS)
 
     @cached_property
-    def aws_account_alias(self: "One") -> str:
-        if "AWS_ACCOUNT_ALIAS" in os.environ:
-            return os.environ["AWS_ACCOUNT_ALIAS"]
-        try:
-            res = self.boto_ses.client("iam").list_account_aliases()
-            return res["AccountAliases"][0]
-        except IndexError:
-            return "dummy-us-east-1-data"
+    def boto_ses(self: One) -> boto3.Session:  # pragma: no cover
+        """
+        The boto3 session of :attr:`bsm`.
+        """
+        return self.bsm.boto_ses
 
     @cached_property
-    def s3_client(self: "One"):
-        return self.boto_ses.client("s3")
+    def s3_client(self: One) -> S3Client:  # pragma: no cover
+        """
+        An S3 client of :attr:`bsm`.
+        """
+        return self.bsm.s3_client
 
     @cached_property
-    def lambda_client(self: "One"):
-        return self.boto_ses.client("lambda")
+    def lambda_client(self: One) -> LambdaClient:  # pragma: no cover
+        """
+        A Lambda client of :attr:`bsm`.
+        """
+        return self.bsm.lambda_client
 
     @cached_property
-    def cloudformation_client(self: "One"):
-        return self.boto_ses.client("cloudformation")
+    def cloudformation_client(self: One) -> CloudFormationClient:  # pragma: no cover
+        """
+        A CloudFormation client of :attr:`bsm`.
+        """
+        return self.bsm.cloudformation_client
+
+    @cached_property
+    def ssm_client(self: One) -> SSMClient:  # pragma: no cover
+        """
+        An SSM client of :attr:`bsm`.
+        """
+        return self.bsm.ssm_client

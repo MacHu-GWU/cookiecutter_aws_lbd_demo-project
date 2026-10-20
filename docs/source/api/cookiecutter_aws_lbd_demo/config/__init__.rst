@@ -12,6 +12,5 @@ sub packages and modules
 
     api <api>
     config_00_main <config_00_main>
-    config_01_lbd_func <config_01_lbd_func>
-    config_02_lbd_deploy <config_02_lbd_deploy>
+    config_01_name <config_01_name>
     

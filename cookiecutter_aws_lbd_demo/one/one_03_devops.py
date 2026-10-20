@@ -1,0 +1,336 @@
+# -*- coding: utf-8 -*-
+
+"""
+The DevOps part of ``one``: everything a developer runs from a local machine to
+ship this project, besides ``cdk deploy``.
+
+- **Config:** :meth:`~OneDevOpsMixin.deploy_config` writes the config of the
+  current environment to SSM, where the Lambda functions read it.
+- **Layer:** :meth:`~OneDevOpsMixin.deploy_lambda_layer` builds the layer of the
+  ``[project] dependencies``, publishes it in the DEVOPS account, and grants every
+  environment's account access to it. One layer serves every environment;
+  ``lambda_layer_version`` in ``config-<env>.json5`` picks the version.
+- **Source:** :meth:`~OneDevOpsMixin.build_lambda_source` copies the package's
+  source files to a folder that the lbd stack deploys with ``Code.from_asset``.
+
+The build tools are dev dependencies, imported through ``lazy_imports``, so this
+module is safe to import inside Lambda.
+"""
+
+from __future__ import annotations
+
+import typing as T
+import shutil
+from pathlib import Path
+
+from ..paths import path_enum
+from ..env import EnvNameEnum
+from ..constants import IS_LAMBDA_X86
+from ..constants import LAMBDA_LAYER_GLIBC
+from ..constants import LAMBDA_SOURCE_INCLUDE
+from ..constants import LAMBDA_SOURCE_EXCLUDE
+from ..config.api import Config
+from ..lazy_imports import simple_aws_lambda
+from ..lazy_imports import aws_lbd_art_builder_uv
+from ..lazy_imports import aws_lbd_art_builder_core
+
+if T.TYPE_CHECKING:  # pragma: no cover
+    from .one_00_main import One
+
+
+def load_all_env_configs() -> dict[str, Config]:
+    """
+    The config of every environment whose config files are complete, by name.
+    An environment without its ``-secret`` file (not set up on this machine yet)
+    is skipped with a warning.
+    """
+    configs = {}
+    for member in EnvNameEnum:
+        try:
+            configs[member.value] = Config.load_from_local_config_file(
+                env_name=member.value
+            )
+        except Exception as e:  # pragma: no cover
+            print(
+                f"WARNING: skip env {member.value!r}, cannot load its config: "
+                f"{type(e).__name__}: {e}"
+            )
+    return configs
+
+
+def check_layer_binaries(dir_python: Path):
+    """
+    Make sure every compiled extension in the layer is a Linux binary.
+
+    ``validate_artifacts`` only checks the direct dependencies, while most
+    compiled code (e.g. ``pydantic_core``) comes from transitive ones.
+
+    :raises ValueError: a ``.so`` file is not ELF, or there is a ``.dylib``.
+    """
+    errors = [str(p) for p in dir_python.rglob("*.dylib")]
+    for path in dir_python.rglob("*.so"):
+        with path.open("rb") as f:
+            if f.read(4) != b"\x7fELF":
+                errors.append(str(path))
+    if errors:
+        raise ValueError(
+            "Found non-Linux binaries in the Lambda layer:\n" + "\n".join(errors)
+        )
+
+
+def build_lambda_source(dir_build: Path = path_enum.dir_build_lambda_source_build):
+    """
+    Copy the package's source files to ``dir_build/<package_name>/``, the folder
+    the lbd stack deploys with ``Code.from_asset``.
+
+    Only files matching :data:`~cookiecutter_aws_lbd_demo.constants.LAMBDA_SOURCE_INCLUDE`
+    are copied, not an installed package: the ``dist-info`` of an install has
+    absolute paths in it, which would change the asset hash on every machine.
+    The folder is wiped first, so its content, and so the CDK asset hash, only
+    depends on the source files.
+    """
+    shutil.rmtree(dir_build, ignore_errors=True)
+    aws_lbd_art_builder_core.copy_source_for_lambda_deployment(
+        source_dir=path_enum.dir_package,
+        target_dir=dir_build / path_enum.dir_package.name,
+        include=LAMBDA_SOURCE_INCLUDE,
+        exclude=LAMBDA_SOURCE_EXCLUDE,
+    )
+
+
+class OneDevOpsMixin:
+    """
+    Config, Lambda layer, and Lambda source deployment.
+    """
+
+    # --------------------------------------------------------------------------
+    # Config
+    # --------------------------------------------------------------------------
+    def deploy_config(self: One):  # pragma: no cover
+        """
+        Write the whole config of the current environment, as JSON, to its SSM
+        parameter, :attr:`~cookiecutter_aws_lbd_demo.config.config_01_name.ConfigNameMixin.ssm_param_name_config`.
+
+        It is a ``SecureString``, because the ``-secret`` config files go into it
+        too. The ``Intelligent-Tiering`` tier switches to an advanced parameter
+        (8 KB) only when the value is over the 4 KB of a standard one.
+        This is done with boto3, not CDK, so no value ends up in a CloudFormation
+        template.
+        """
+        config = self.config
+        value = config.model_dump_json()
+        self.ssm_client.put_parameter(
+            Name=config.ssm_param_name_config,
+            Value=value,
+            Type="SecureString",
+            Overwrite=True,
+            Tier="Intelligent-Tiering",
+        )
+        print(f"Deployed config of {config.env_name!r} ({len(value)} bytes) to:")
+        print(f"  {config.ssm_param_url_config}")
+
+    # --------------------------------------------------------------------------
+    # Layer
+    # --------------------------------------------------------------------------
+    @property
+    def lambda_architecture(self: One) -> str:
+        """
+        Lambda architecture name, ``x86_64`` or ``arm64``.
+        """
+        return "x86_64" if IS_LAMBDA_X86 else "arm64"
+
+    @property
+    def lambda_python_version_tuple(self: One) -> tuple[int, int]:
+        """
+        ``(3, 12)`` for ``lambda_python_version = "3.12"``.
+        """
+        major, minor = self.config.lambda_python_version.split(".")
+        return int(major), int(minor)
+
+    def _make_layer_builder(self: One):
+        """
+        Create the layer builder for this project.
+
+        - **local (default):** ``uv sync --python-platform`` on the host. uv
+          downloads the Linux wheels directly, so no Docker is needed.
+          ``--no-build`` makes uv fail loudly if a dependency has no Linux wheel,
+          instead of silently compiling a macOS binary into the layer.
+        - **container** (``lambda_layer_build_in_container: true``): ``uv sync``
+          inside the AWS SAM build image, which needs Docker. Use it only when a
+          dependency ships source only and has C extensions.
+        """
+        layer_api = aws_lbd_art_builder_uv.layer_api
+        py_major, py_minor = self.lambda_python_version_tuple
+        if self.config.lambda_layer_build_in_container:
+            return layer_api.UvLambdaLayerContainerBuilder(
+                path_pyproject_toml=path_enum.path_pyproject_toml,
+                py_ver_major=py_major,
+                py_ver_minor=py_minor,
+                is_arm=not IS_LAMBDA_X86,
+                skip_prompt=True,
+            )
+        cpu = "x86_64" if IS_LAMBDA_X86 else "aarch64"
+        return layer_api.UvLambdaLayerLocalBuilder(
+            path_pyproject_toml=path_enum.path_pyproject_toml,
+            skip_prompt=True,
+            uv_sync_options=layer_api.UvSyncOptions(
+                extra_args=[
+                    "--python-platform",
+                    f"{cpu}-manylinux_{LAMBDA_LAYER_GLIBC}",
+                    "--python",
+                    self.config.lambda_python_version,
+                    "--no-build",
+                ],
+            ),
+        )
+
+    def build_lambda_layer_only(self: One):
+        """
+        Build the Lambda layer only, no zip/upload/publish. The artifacts are left
+        in ``build/lambda/layer/artifacts/python/``.
+        """
+        builder = self._make_layer_builder()
+        builder.run()
+        check_layer_binaries(builder.path_layout.dir_python)
+
+    def _make_layer_publisher(self: One):
+        """
+        The publisher, in the DEVOPS account, used to ask whether ``uv.lock``
+        changed since the latest published version.
+        """
+        return aws_lbd_art_builder_core.layer_api.LambdaLayerVersionPublisher(
+            path_pyproject_toml=path_enum.path_pyproject_toml,
+            s3dir_lambda=self.config.s3dir_lambda,
+            path_manifest=path_enum.path_uv_lock,
+            s3_client=self.bsm_devops.s3_client,
+            layer_name=self.config.lambda_layer_name,
+            lambda_client=self.bsm_devops.lambda_client,
+        )
+
+    def deploy_lambda_layer(self: One):  # pragma: no cover
+        """
+        Full Lambda layer pipeline, in the DEVOPS account:
+        Build → Package (zip) → Upload (S3) → Publish → Grant.
+
+        ``LayerDeploymentWorkflow`` only finds out that ``uv.lock`` is unchanged
+        after it has already built, zipped and uploaded, then raises
+        ``ValueError``. So we ask the publisher first and skip to the grant step
+        when there is nothing new to publish. The grant always runs, so an
+        account added to a config gets access to the latest version.
+        """
+        publisher = self._make_layer_publisher()
+        if publisher.has_dependency_manifest_changed() is False:
+            version = publisher.latest_layer_version.version
+            print(f"uv.lock unchanged since layer version {version}, skip publish.")
+        else:
+            builder = self._make_layer_builder()
+            workflow = aws_lbd_art_builder_core.layer_api.LayerDeploymentWorkflow(
+                builder=builder,
+                path_manifest=path_enum.path_uv_lock,
+                s3dir_lambda=self.config.s3dir_lambda,
+                layer_name=self.config.lambda_layer_name,
+                s3_client=self.bsm_devops.s3_client,
+                lambda_client=self.bsm_devops.lambda_client,
+                publish_layer_version_kwargs={
+                    "CompatibleRuntimes": [
+                        f"python{self.config.lambda_python_version}"
+                    ],
+                    "CompatibleArchitectures": [self.lambda_architecture],
+                },
+            )
+            # Same steps as workflow.run(), with a binary check before upload.
+            workflow.step_1_build()
+            check_layer_binaries(builder.path_layout.dir_python)
+            workflow.step_2_package()
+            workflow.step_3_upload()
+            layer_deployment = workflow.step_4_publish()
+            version = layer_deployment.layer_version
+        self.grant_lambda_layer_access(version=version)
+        self.print_lambda_layer_versions(latest_version=version)
+
+    def grant_lambda_layer_access(self: One, version: int):  # pragma: no cover
+        """
+        Let the account of every environment use a layer version. Idempotent.
+        """
+        configs = load_all_env_configs()
+        account_ids = sorted({config.aws_account_id for config in configs.values()})
+        for account_id in account_ids:
+            simple_aws_lambda.grant_aws_account_or_aws_organization_lambda_layer_version_access(
+                lambda_client=self.bsm_devops.lambda_client,
+                layer_name=self.config.lambda_layer_name,
+                version_number=version,
+                principal=account_id,
+            )
+            print(f"Granted layer version {version} to account {account_id}")
+
+    def print_lambda_layer_versions(self: One, latest_version: int):
+        """
+        Print the latest layer version, and the version each environment uses.
+        """
+        print(
+            f"Latest layer: {self.config.get_lambda_layer_version_arn(latest_version)}"
+        )
+        for env_name, config in load_all_env_configs().items():
+            if config.lambda_layer_version == latest_version:
+                status = "up to date"
+            else:
+                status = (
+                    f"to use the latest, set lambda_layer_version: {latest_version} "
+                    f"in config/config-{env_name}.json5"
+                )
+            print(f"  {env_name}: version {config.lambda_layer_version}, {status}")
+
+    def cleanup_old_layer_versions(
+        self: One,
+        keep_last_n_versions: int = 3,
+        real_run: bool = False,
+    ) -> list[int]:  # pragma: no cover
+        """
+        Delete old versions of the layer in the DEVOPS account.
+
+        It keeps the latest ``keep_last_n_versions``, and every version some
+        environment's config uses. Without ``real_run`` it only prints what it
+        would delete.
+        """
+        lambda_client = self.bsm_devops.lambda_client
+        layer_name = self.config.lambda_layer_name
+        in_use = {
+            config.lambda_layer_version for config in load_all_env_configs().values()
+        }
+        versions = sorted(
+            (
+                layer_version.version
+                for layer_version in simple_aws_lambda.list_layer_versions(
+                    lambda_client=lambda_client,
+                    layer_name=layer_name,
+                )
+            ),
+            reverse=True,
+        )
+        keep = set(versions[:keep_last_n_versions]) | in_use
+        to_delete = [version for version in versions if version not in keep]
+        print(f"Layer {layer_name!r} versions: {versions}")
+        print(
+            f"  keep (latest {keep_last_n_versions} + in use {sorted(in_use)}): {sorted(keep)}"
+        )
+        print(f"  delete: {to_delete}")
+        if real_run:
+            for version in to_delete:
+                lambda_client.delete_layer_version(
+                    LayerName=layer_name,
+                    VersionNumber=version,
+                )
+                print(f"  deleted version {version}")
+        else:
+            print("  dry run, nothing deleted")
+        return to_delete
+
+    # --------------------------------------------------------------------------
+    # Source
+    # --------------------------------------------------------------------------
+    def build_lambda_source(self: One):
+        """
+        See :func:`build_lambda_source`.
+        """
+        build_lambda_source()
+        print(f"Built Lambda source in {path_enum.dir_build_lambda_source_build}")

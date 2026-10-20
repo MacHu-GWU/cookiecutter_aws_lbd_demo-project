@@ -24,10 +24,8 @@ alongside the code they cover.
 """
 
 from ..paths import path_enum
-from ..vendor.pytest_cov_helper import (
-    run_unit_test as _run_unit_test,
-    run_cov_test as _run_cov_test,
-)
+from ..vendor.pytest_cov_helper import run_unit_test as _run_unit_test
+from ..vendor.pytest_cov_helper import run_cov_test as _run_cov_test
 
 
 def run_unit_test(

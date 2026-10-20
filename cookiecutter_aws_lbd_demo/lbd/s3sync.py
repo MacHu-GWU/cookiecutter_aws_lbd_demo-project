@@ -7,12 +7,14 @@ to target bucket. The target bucket is defined in the configuration.
 
 import typing as T
 from pydantic import Field
-from s3pathlib import S3Path
-from aws_lambda_powertools.utilities.data_classes import S3Event, event_source
+from s3pathlib.api import S3Path
+from aws_lambda_powertools.utilities.data_classes import S3Event
+from aws_lambda_powertools.utilities.data_classes import event_source
 
 from ..logger import logger
 from ..one.api import one
-from .base import BaseInput, BaseOutput
+from .base import BaseInput
+from .base import BaseOutput
 
 if T.TYPE_CHECKING:  # pragma: no cover
     from mypy_boto3_s3.client import S3Client
@@ -56,12 +58,12 @@ class Input(BaseInput[Output]):
         logger.info(f"copy {s3path_source.uri}")
         logger.info(f"preview: {s3path_source.console_url}", indent=1)
 
-        s3path_target = one.s3dir_target.joinpath(
-            s3path_source.relative_to(one.s3dir_source)
+        s3path_target = one.config.s3dir_target.joinpath(
+            s3path_source.relative_to(one.config.s3dir_source)
         )
         logger.info(f"to {s3path_target.uri}")
         logger.info(f"preview: {s3path_target.console_url}", indent=1)
-        s3path_source.copy_to(s3path_target, overwrite=True, bsm=s3_client)
+        s3path_source.copy_to(s3path_target, overwrite=True, s3_client=s3_client)
 
         return Output(
             s3uri_target=s3path_target.uri,

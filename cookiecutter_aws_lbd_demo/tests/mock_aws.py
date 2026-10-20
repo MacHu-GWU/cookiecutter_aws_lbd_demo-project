@@ -33,7 +33,6 @@ ensures that the assertions stay in sync.
 """
 
 import typing as T
-import os
 import dataclasses
 
 import moto
@@ -99,10 +98,9 @@ class BaseMockAwsTest:
                 region_name=mock_aws_test_config.aws_region
             )
         else:
-            cls.boto_ses: boto3.Session = boto3.Session(
-                profile_name=os.environ["LOCAL_AWS_PROFILE"],
-                region_name=mock_aws_test_config.aws_region,
-            )
+            from ..one.api import one
+
+            cls.boto_ses: boto3.Session = one.boto_ses
 
         cls.s3_client: "S3Client" = cls.boto_ses.client("s3")
 

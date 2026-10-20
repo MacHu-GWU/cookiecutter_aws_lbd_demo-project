@@ -14,9 +14,9 @@ sub packages and modules
     config <config/__init__>
     lbd <lbd/__init__>
     one <one/__init__>
-    _version <_version>
     api <api>
     constants <constants>
+    env <env>
     lambda_function <lambda_function>
     lazy_imports <lazy_imports>
     logger <logger>

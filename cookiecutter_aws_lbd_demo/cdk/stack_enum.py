@@ -1,74 +1,81 @@
 # -*- coding: utf-8 -*-
 
 """
-Stack enumeration — single entry point for all CDK stacks.
+Layer 2 of the cdk_mate two-layer pattern: one CDK stack per entry of
+:class:`~cookiecutter_aws_lbd_demo.cdk.stack_ctx_enum.StackCtxEnum`, same name,
+written out by hand:
 
-**Why ``StackEnum`` instead of bare variables?**
-
-A CDK app typically has multiple stacks, and each stack may depend on the
-``one`` singleton for configuration.  ``StackEnum`` wraps them behind
-``@cached_property`` so that:
-
-1. **Stacks are only synthesized when accessed** — if ``cdk_app.py`` only
-   touches ``stack_enum.lambda_stack``, the infra stack is never constructed.
-   This is useful during development when you want to iterate on a single
-   stack without waiting for the full app to synthesize.
-
-2. **Import-time side effects are avoided** — each ``cached_property`` uses a
-   local import (``from .stacks.infra_stack import InfraStack``) so that heavy
-   CDK modules are loaded on demand, not at module import time.
-
-3. **IDE-friendly** — ``stack_enum.infra_stack`` gives autocomplete and
-   type inference, unlike a plain ``dict`` or dynamic lookup.
-
-4. **Adding a new stack** is mechanical: create the stack class, add a
-   ``@cached_property`` here, and access it in ``cdk_app.py``.
+- **Arguments by name,** so a new ``__init__`` argument breaks every entry that
+  does not pass it.
+- **Dependencies are attribute access:** ``lbd`` passes
+  ``self.infra.iam_role_for_lambda``, so CDK exports the role ARN from the infra
+  stack, imports it in the lbd stack, and deploys infra first.
+- **One instance per stack:** a cached property is built once; the same construct
+  ID twice in one ``cdk.App`` is an error.
 """
 
+from __future__ import annotations
+
+import typing as T
 import dataclasses
 from functools import cached_property
 
 import aws_cdk as cdk
 
-from ..one.api import one
+from .stack_ctx_enum import list_entry_names
+from .stacks.infra_stack import InfraStack
+from .stacks.lbd_stack import LbdStack
+
+if T.TYPE_CHECKING:  # pragma: no cover
+    from ..one.api import One
 
 
 @dataclasses.dataclass
 class StackEnum:
     """
-    Registry of all CDK stacks in this project.
-
-    Each stack is exposed as a ``@cached_property`` — constructed once on first
-    access, then reused.
+    The stacks of the current environment, created in :attr:`app` on first access.
     """
 
-    app: cdk.App = dataclasses.field()
+    # fmt: off
+    app: cdk.App = dataclasses.field()  #: The CDK app that owns every stack.
+    one: One = dataclasses.field()  #: The project singleton, for ``config`` and ``stack_ctx_enum``.
+    # fmt: on
 
     @cached_property
-    def infra_stack(self):
-        """Long-lived infrastructure stack (IAM roles, policies)."""
-        from .stacks.infra_stack import InfraStack
-
+    def infra(self) -> InfraStack:
         return InfraStack(
             scope=self.app,
-            one=one,
+            **self.one.stack_ctx_enum.infra.to_stack_kwargs(),
+            config=self.one.config,
         )
 
     @cached_property
-    def lambda_stack(self):
-        """Frequently-deployed compute stack (Lambda functions, layers, events)."""
-        from .stacks.lambda_stack import LambdaStack
-
-        return LambdaStack(
+    def lbd(self) -> LbdStack:
+        return LbdStack(
             scope=self.app,
-            one=one,
+            **self.one.stack_ctx_enum.lbd.to_stack_kwargs(),
+            config=self.one.config,
+            iam_role_for_lambda=self.infra.iam_role_for_lambda,
         )
 
+    def get(self, stack: str) -> cdk.Stack:
+        """
+        Create (once) and return the stack given by name, such as ``get("infra")``.
 
-# Create the global stack enumeration instance
-app = cdk.App()
+        :raises AttributeError: there is no such entry.
+        """
+        return getattr(self, stack)
 
-stack_enum = StackEnum(app=app)
-"""
-Module-level singleton — import this from ``cdk_app.py`` to synthesize stacks.
-"""
+    def get_all(self) -> list[cdk.Stack]:
+        """
+        Create every stack, in creation order, and return them; loop over this
+        instead of naming each stack.
+        """
+        return [self.get(name) for name in list_entry_names(type(self))]
+
+    def synth(self) -> None:
+        """
+        Create every stack, then synthesize the app into ``cdk.out``.
+        """
+        self.get_all()
+        self.app.synth()

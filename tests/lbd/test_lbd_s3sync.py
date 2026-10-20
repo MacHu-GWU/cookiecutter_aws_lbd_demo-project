@@ -28,21 +28,23 @@ class Test(BaseMockAwsTest):
 
     @classmethod
     def setup_class_post_hook(cls):
-        cls.create_s3_bucket(bucket_name=one.s3dir_data.bucket)
-        cls.s3path_source = one.s3dir_source.joinpath("file.txt")
-        cls.s3path_target = one.s3dir_target.joinpath("file.txt")
-        cls.s3path_source.write_text("hello", bsm=cls.s3_client)
+        cls.create_s3_bucket(bucket_name=one.config.s3dir_data.bucket)
+        cls.s3path_source = one.config.s3dir_source.joinpath("file.txt")
+        cls.s3path_target = one.config.s3dir_target.joinpath("file.txt")
+        cls.s3path_source.write_text("hello", s3_client=cls.s3_client)
 
     def test_sync(
         self,
         disable_logger,
     ):
-        assert self.s3path_source.exists(bsm=self.s3_client) is True
-        assert self.s3path_target.exists(bsm=self.s3_client) is False
+        assert self.s3path_source.exists(s3_client=self.s3_client) is True
+        assert self.s3path_target.exists(s3_client=self.s3_client) is False
 
-        output = Input(s3uri_source=self.s3path_source.uri).sync(s3_client=self.s3_client)
-        assert output.s3path_target.exists(bsm=self.s3_client) is True
-        assert output.s3path_target.read_text(bsm=self.s3_client) == "hello"
+        output = Input(s3uri_source=self.s3path_source.uri).sync(
+            s3_client=self.s3_client
+        )
+        assert output.s3path_target.exists(s3_client=self.s3_client) is True
+        assert output.s3path_target.read_text(s3_client=self.s3_client) == "hello"
 
 
 if __name__ == "__main__":

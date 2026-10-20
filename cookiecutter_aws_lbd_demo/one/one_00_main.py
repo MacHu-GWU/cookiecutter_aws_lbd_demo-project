@@ -1,59 +1,56 @@
 # -*- coding: utf-8 -*-
 
 """
-Core singleton class combining all mixin functionality for centralized resource access.
+The ``One`` class: a single entry point to every project-level singleton.
 
-**Why the mixin composition pattern?**
+Instead of importing ``env``, ``runtime``, the config, and the boto session from
+four places, code imports ``one`` and reads ``one.env``, ``one.runtime``,
+``one.config``, ``one.boto_ses``, and so on. Everything environment specific
+(``one.config``, ``one.bsm``, ``one.stack_ctx_enum``, ``one.stack_enum``) belongs to
+the current environment, ``one.env.current_env_name``, set by ``ENV_NAME``.
 
-The ``One`` class is assembled from multiple mixin classes rather than being
-defined monolithically in a single file.  This design is intentional:
+**Why mixins:** each concern lives in its own numbered module (``one_01_config.py``,
+``one_02_boto_ses.py``, ...), so a reader looking for "how is the boto session
+built?" opens one short file. The number gives the dependency order: config comes
+before the session, the session before anything that calls AWS. All mixins share
+``self``, so a property in one mixin reads another's (``self.config``,
+``self.boto_ses``) without any wiring.
 
-1. **Separation of concerns** — each mixin owns exactly one responsibility
-   (config, boto sessions, S3 paths, DevOps automation).  A developer looking
-   for "how do we resolve S3 paths?" goes straight to ``one_03_s3.py`` without
-   wading through unrelated boto-session or deployment code.
+**To add a concern:** create ``one_0N_xxx.py`` with a ``OneXxxMixin`` class whose
+properties are ``@cached_property``, then add the mixin to the bases of :class:`One`.
 
-2. **Independent evolution** — mixins can be added, removed, or reordered
-   without touching unrelated code.  For example, adding a new
-   ``one_05_monitoring.py`` mixin only requires creating the file and listing
-   it in the ``One`` class bases below.
-
-3. **Numbered file naming convention** — files are prefixed ``one_00_``,
-   ``one_01_``, … to make the **reading order** and **dependency order**
-   explicit.  Lower-numbered mixins are more foundational (e.g., config must
-   exist before boto session, boto session before S3 paths).  The same
-   convention is used in ``config/`` (``config_00_``, ``config_01_``, …) and
-   CDK stack methods (``s01_``, ``s02_``, …).
-
-4. **Kept in one class (not separate objects)** — all mixins share ``self``, so
-   a property in ``OneS3Mixin`` can naturally access ``self.boto_ses`` defined
-   in ``OneBotoSesMixin``.  No wiring, no dependency injection — just attribute
-   access on a single instance.
+Every property is computed on first access, so importing ``one`` does no work and
+makes no AWS call. The same ``one`` runs inside Lambda; the devops and cdk
+mixins import their dev-only dependencies lazily.
 """
 
-try:
-    from pywf_internal_proprietary.api import PyWf
-except ImportError:  # pragma: no cover
-    pass
-from ..runtime import runtime
+from __future__ import annotations
 
+from ..env import env
+from ..runtime import runtime
 from .one_01_config import OneConfigMixin
 from .one_02_boto_ses import OneBotoSesMixin
-from .one_03_s3 import OneS3Mixin
-from .one_04_devops import OneDevOpsMixin
+from .one_03_devops import OneDevOpsMixin
+from .one_04_cdk import OneCdkMixin
 
 
 class One(
     OneConfigMixin,
     OneBotoSesMixin,
-    OneS3Mixin,
     OneDevOpsMixin,
-):  # pragma: no cover
+    OneCdkMixin,
+):
     """
-    Main singleton class providing unified access to all application resources and services.
+    Aggregates every project-level singleton. Use the module-level :data:`~cookiecutter_aws_lbd_demo.one.one_00_main.one`.
     """
 
-    runtime = runtime
+    # fmt: off
+    env = env  #: The deployment environment detector, see :mod:`cookiecutter_aws_lbd_demo.env`.
+    runtime = runtime #: The runtime detector, see :mod:`cookiecutter_aws_lbd_demo.runtime`.
+    # fmt: on
 
 
 one = One()
+"""
+The single :class:`One` instance of this project.
+"""

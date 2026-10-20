@@ -7,13 +7,15 @@ This lambda function takes a name as input and echo back ``hello {name}``
 from pydantic import Field
 
 from ..logger import logger
-from .base import BaseInput, BaseOutput
+from .base import BaseInput
+from .base import BaseOutput
 
 
 class Output(BaseOutput):
     """
     Lambda function output containing the greeting message.
     """
+
     message: str = Field()
 
 
@@ -21,6 +23,7 @@ class Input(BaseInput[Output]):
     """
     Lambda function input with name parameter for greeting generation.
     """
+
     name: str = Field(default="Mr X")
 
     @logger.pretty_log()

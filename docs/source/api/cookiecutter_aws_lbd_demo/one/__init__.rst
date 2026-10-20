@@ -14,6 +14,6 @@ sub packages and modules
     one_00_main <one_00_main>
     one_01_config <one_01_config>
     one_02_boto_ses <one_02_boto_ses>
-    one_03_s3 <one_03_s3>
-    one_04_devops <one_04_devops>
+    one_03_devops <one_03_devops>
+    one_04_cdk <one_04_cdk>
     

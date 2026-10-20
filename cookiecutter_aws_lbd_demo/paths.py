@@ -15,6 +15,7 @@ class PathEnum:
     absolute paths to eliminate current directory dependencies and ensure consistent path
     resolution across different execution contexts and DevOps workflows.
     """
+
     @cached_property
     def dir_home(self):
         return Path.home()
@@ -24,12 +25,21 @@ class PathEnum:
 
     # Source Code
     dir_package = _dir_here
-    path_version_py = dir_package / "_version.py"
     path_pyproject_toml = dir_project_root / "pyproject.toml"
+    path_uv_lock = dir_project_root / "uv.lock"
     path_requirements_txt = dir_project_root / "requirements.txt"
-    path_authors = dir_project_root / "AUTHORS.txt"
+    path_authors = dir_project_root / "AUTHORS.rst"
     path_license = dir_project_root / "LICENSE.txt"
     path_release_history = dir_project_root / "release-history.rst"
+    path_mise_toml = dir_project_root / "mise.toml"
+
+    # Config files, see Config.load_from_local_config_file
+    dir_config = dir_project_root / "config"
+
+    # CDK
+    dir_cdk = dir_project_root / "cdk"
+    path_cdk_app_py = dir_cdk / "cdk_app.py"
+    dir_cdk_out = dir_cdk / "cdk.out"
 
     # Virtual Environment
     dir_venv = dir_project_root / ".venv"
@@ -56,9 +66,8 @@ class PathEnum:
     # Lambda Functions
     dir_build_lambda = dir_project_root / "build" / "lambda"
     dir_build_lambda_source = dir_build_lambda / "source"
+    # Code.from_asset of the lbd stack points here, see build_lambda_source
     dir_build_lambda_source_build = dir_build_lambda_source / "build"
-    path_lambda_source_zip = dir_build_lambda_source / "source.zip"
-    path_lambda_source_s3uri = dir_build_lambda_source / "source-s3uri.txt"
 
 
 path_enum = PathEnum()

@@ -1,123 +1,111 @@
 # -*- coding: utf-8 -*-
 
 """
-Infrastructure stack — long-lived, shared resources (IAM roles, policies).
+The infra stack: long-lived resources that rarely change, the Lambda execution
+role. The Lambda functions themselves are in the lbd stack.
 
-**Why a separate stack from Lambda?**
+**Why a separate stack:** a code change, the common deploy, only touches the
+lbd stack, and a bad Lambda deploy cannot change IAM permissions. The lbd stack
+gets the role as an argument, see
+:class:`~cookiecutter_aws_lbd_demo.cdk.stack_enum.StackEnum`.
 
-CDK deploys each stack independently.  Infrastructure resources like IAM roles
-change **rarely** (only when permissions need updating), while Lambda function
-code changes **frequently** (every feature iteration).  Splitting them into two
-stacks gives us:
-
-1. **Faster deploys** — the common case (code change) only touches the Lambda
-   stack.  No need to diff or re-deploy IAM resources on every push.
-2. **Blast-radius isolation** — a bad Lambda deploy cannot accidentally modify
-   IAM permissions, and vice versa.  Each stack has its own CloudFormation
-   changeset and rollback boundary.
-3. **Cross-stack references** — the infra stack exports the IAM role ARN via
-   ``CfnOutput``.  The Lambda stack imports it with ``Fn.import_value``.  This
-   is a standard CloudFormation pattern for decoupling stacks that share
-   resources.
-
-**Section numbering convention** (``s01_``, ``s02_``, …): methods are prefixed
-with a section number so that ``__init__`` reads like a table of contents and
-the execution order is unambiguous.
+The data bucket is not in any stack: it is shared with other projects and
+exists already. This stack only grants access to this environment's folder of it.
 """
+
+from __future__ import annotations
 
 import aws_cdk as cdk
 from aws_cdk import aws_iam as iam
-
 from constructs import Construct
 
-from ...one.api import One
+from ...config.api import Config
 
 
 class InfraStack(cdk.Stack):
+    """
+    Takes the standard arguments of :meth:`cdk_mate.stack_ctx.StackCtx.to_stack_kwargs`
+    plus the config of its environment; every name comes from the config.
+    """
+
     def __init__(
         self,
         scope: Construct,
-        one: One,
-        **kwargs,
+        id: str,
+        stack_name: str,
+        env: cdk.Environment,
+        config: Config,
     ) -> None:
-        self.one = one
-
         super().__init__(
             scope=scope,
-            id=f"{self.one.config.project_name_slug}-infra",
-            **kwargs,
+            id=id,
+            stack_name=stack_name,
+            env=env,
         )
+        self.config = config
+        self.s01_create_iam_role_for_lambda()
+        self.s02_create_outputs()
 
-        self.s01_create_iam_roles()
-
-    def s01_create_iam_roles(self):
+    def s01_create_iam_role_for_lambda(self) -> None:
         """
-        IAM related resources.
+        The execution role of every Lambda function of this environment:
 
-        Ref:
-
-        - IAM Object quotas: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html#reference_iam-quotas-entities
+        - CloudWatch Logs, through ``AWSLambdaBasicExecutionRole``.
+        - Read its config from SSM. The parameter is a ``SecureString`` encrypted
+          with the AWS managed key ``aws/ssm``, whose key policy already lets every
+          principal of the account decrypt through SSM, so no KMS statement is needed.
+        - Read and write only the ``s3dir_data`` folder of the shared data bucket.
         """
-
-        self.stat_iam_list_account_aliases = iam.PolicyStatement(
-            effect=iam.Effect.ALLOW,
-            actions=["iam:ListAccountAliases"],
-            resources=["*"],
-        )
-
-        self.stat_s3_bucket_read = iam.PolicyStatement(
-            effect=iam.Effect.ALLOW,
-            actions=[
-                "s3:ListBucket",
-                "s3:GetObject",
-                "s3:GetObjectAttributes",
-                "s3:GetObjectTagging",
-            ],
-            resources=[
-                f"arn:aws:s3:::{self.one.s3dir_data.bucket}",
-                f"arn:aws:s3:::{self.one.s3dir_data.bucket}/{self.one.s3dir_data.key}*",
-            ],
-        )
-
-        self.stat_s3_bucket_write = iam.PolicyStatement(
-            effect=iam.Effect.ALLOW,
-            actions=[
-                "s3:PutObject",
-                "s3:DeleteObject",
-                "s3:PutObjectTagging",
-                "s3:DeleteObjectTagging",
-            ],
-            resources=[
-                f"arn:aws:s3:::{self.one.s3dir_data.bucket}",
-                f"arn:aws:s3:::{self.one.s3dir_data.bucket}/{self.one.s3dir_data.key}*",
-            ],
-        )
-
-        # declare iam role
+        config = self.config
+        bucket_arn = f"arn:aws:s3:::{config.s3dir_data.bucket}"
+        statements = [
+            iam.PolicyStatement(
+                actions=["ssm:GetParameter"],
+                resources=[config.ssm_param_arn_config],
+            ),
+            iam.PolicyStatement(
+                actions=["s3:ListBucket"],
+                resources=[bucket_arn],
+                conditions={
+                    "StringLike": {"s3:prefix": [f"{config.s3dir_data.key}*"]},
+                },
+            ),
+            iam.PolicyStatement(
+                actions=[
+                    "s3:GetObject",
+                    "s3:GetObjectAttributes",
+                    "s3:GetObjectTagging",
+                    "s3:PutObject",
+                    "s3:PutObjectTagging",
+                    "s3:DeleteObject",
+                    "s3:DeleteObjectTagging",
+                ],
+                resources=[f"{bucket_arn}/{config.s3dir_data.key}*"],
+            ),
+        ]
         self.iam_role_for_lambda = iam.Role(
-            scope=self,
-            id="IamRoleForLambda",
+            self,
+            "IamRoleForLambda",
+            role_name=config.iam_role_name_lambda,
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
-            role_name=f"{self.one.config.project_name_snake}-{cdk.Aws.REGION}-lambda",
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name(
                     "service-role/AWSLambdaBasicExecutionRole"
                 ),
             ],
             inline_policies={
-                f"{self.one.config.project_name_snake}-{cdk.Aws.REGION}-lambda": iam.PolicyDocument(
-                    statements=[
-                        self.stat_iam_list_account_aliases,
-                        self.stat_s3_bucket_read,
-                        self.stat_s3_bucket_write,
-                    ]
-                )
+                "main": iam.PolicyDocument(statements=statements),
             },
         )
 
+    def s02_create_outputs(self) -> None:
+        """
+        Export the values other projects may use. Each output has a property in
+        :mod:`~cookiecutter_aws_lbd_demo.cdk.stacks.infra_stack_exports`.
+        """
         self.output_iam_role_for_lambda_arn = cdk.CfnOutput(
             self,
             "IamRoleForLambdaArn",
             value=self.iam_role_for_lambda.role_arn,
-            export_name=f"{self.one.config.project_name_slug}-lambda-role-arn",
+            export_name=self.config.cft_export_name_lambda_role_arn,
         )
