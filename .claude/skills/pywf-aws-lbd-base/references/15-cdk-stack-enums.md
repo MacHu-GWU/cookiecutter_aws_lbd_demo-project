@@ -26,6 +26,7 @@ One CDK stack per stack, in one `cdk.App`, each entry written out by hand:
 
 - `**self.one.stack_ctx_enum.<x>.to_stack_kwargs()`, `config=self.one.config`, then every other argument by name, so a new `__init__` argument breaks every entry that does not pass it.
 - A dependency is attribute access: `iam_role_for_lambda=self.infra.iam_role_for_lambda`. CDK turns it into an export, an import, and a deploy order.
+- `cdk.json` sets `@aws-cdk/core:defaultCrossStackReferences` to `strong`: CloudFormation refuses to change or delete an export while another stack imports it.
 - `synth()` creates every stack, then synthesizes the app.
 
 ---

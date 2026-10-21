@@ -44,7 +44,7 @@
 
 Welcome to ``cookiecutter_aws_lbd_demo`` Documentation
 ==============================================================================
-.. image:: ./docs/source/_static/cookiecutter_aws_lbd_demo-logo.png
+.. image:: https://raw.githubusercontent.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/main/docs/source/_static/cookiecutter_aws_lbd_demo-logo.png
 
 
 About

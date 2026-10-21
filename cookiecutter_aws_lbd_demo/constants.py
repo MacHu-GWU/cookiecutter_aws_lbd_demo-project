@@ -4,17 +4,6 @@
 Fixed values of the Lambda deployment.
 """
 
-LATEST = "$LATEST"
-"""
-The special Lambda function version name that is used for the latest version.
-"""
-
-LIVE = "LIVE"
-"""
-The Lambda function alias name that serving incoming traffics.
-"""
-
-
 IS_LAMBDA_X86 = True
 """
 ``True``: the functions and the layer are x86_64; ``False``: arm64.

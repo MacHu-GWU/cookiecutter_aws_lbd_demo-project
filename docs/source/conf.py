@@ -239,6 +239,19 @@ jinja_contexts = {
     },
 }
 
+
+def skip_pydantic_generic(app, what, name, obj, skip, options):
+    # pydantic adds each parametrized generic, such as ``BaseInput[Output]``,
+    # to the module of the generic class; it is not a name to document
+    if "[" in name:
+        return True
+    return None
+
+
+def setup(app):
+    app.connect("autodoc-skip-member", skip_pydantic_generic)
+
+
 # Api Reference Doc
 from pathlib import Path
 import docfly.api as docfly

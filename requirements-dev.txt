@@ -38,6 +38,7 @@ rich==13.9.4
 s3pathlib==3.0.0
 s3transfer==0.16.1
 simple-aws-lambda==0.3.1
+simple-aws-ssm-parameter-store==0.3.0
 six==1.17.0
 smart-open==7.6.0
 soft-deps==0.1.1

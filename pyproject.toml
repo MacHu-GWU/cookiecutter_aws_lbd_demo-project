@@ -108,7 +108,6 @@ doc = [
 # ------------------------------------------------------------------------------
 mise = [
     "PyGithub>=2.8.0,<3.0.0", # GitHub API client
-    "httpx>=0.28.0,<1.0.0", # HTTP client for ReadTheDocs API
     "tomli>=2.0.0,<3.0.0; python_version < '3.11'", # TOML parser for Python 3.10
 ]
 

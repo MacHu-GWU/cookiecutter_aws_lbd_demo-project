@@ -10,6 +10,7 @@ cffi==2.0.0 ; platform_python_implementation != 'PyPy'
 charset-normalizer==3.4.7
 coverage==7.13.5
 cryptography==46.0.6
+func-args==1.0.2
 idna==3.11
 iniconfig==2.3.0
 iterproxy==0.3.1
@@ -31,6 +32,7 @@ requests==2.33.1
 responses==0.26.0
 s3pathlib==3.0.0
 s3transfer==0.16.1
+simple-aws-ssm-parameter-store==0.3.0
 six==1.17.0
 smart-open==7.6.0
 soft-deps==0.1.1
