@@ -32,6 +32,14 @@ except ImportError:  # pragma: no cover
     )
 
 try:
+    import simple_aws_ssm_parameter_store.api as simple_aws_ssm_parameter_store
+except ImportError:  # pragma: no cover
+    simple_aws_ssm_parameter_store = MissingDependency(
+        name="simple_aws_ssm_parameter_store",
+        error_message=f"please do 'uv sync --extra dev'",
+    )
+
+try:
     import aws_lbd_art_builder_uv.api as aws_lbd_art_builder_uv
 except ImportError:  # pragma: no cover
     aws_lbd_art_builder_uv = MissingDependency(

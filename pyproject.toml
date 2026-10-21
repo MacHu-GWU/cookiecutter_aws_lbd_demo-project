@@ -74,6 +74,7 @@ dev = [
     "aws-cdk-lib>=2.274.0,<3.0.0",
     "cdk-mate>=1.0.1,<2.0.0", # StackCtx of the cdk stack enums
     "simple-aws-lambda>=0.3.1,<1.0.0", # Lambda layer version helpers (cleanup, cross account grant)
+    "simple-aws-ssm-parameter-store>=0.3.0,<1.0.0", # config deploy: write the SSM parameter only when it changed
     "aws-lbd-art-builder-uv[upload,publish]>=1.0.0,<2.0.0", # Build AWS Lambda deployment package
 ]
 

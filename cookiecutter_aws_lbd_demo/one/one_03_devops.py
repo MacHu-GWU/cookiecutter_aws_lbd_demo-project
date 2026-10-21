@@ -31,6 +31,7 @@ from ..constants import LAMBDA_SOURCE_INCLUDE
 from ..constants import LAMBDA_SOURCE_EXCLUDE
 from ..config.api import Config
 from ..lazy_imports import simple_aws_lambda
+from ..lazy_imports import simple_aws_ssm_parameter_store
 from ..lazy_imports import aws_lbd_art_builder_uv
 from ..lazy_imports import aws_lbd_art_builder_core
 
@@ -106,53 +107,69 @@ class OneDevOpsMixin:
     # --------------------------------------------------------------------------
     # Config
     # --------------------------------------------------------------------------
-    def deploy_config(self: One):  # pragma: no cover
+    def deploy_config(self: One) -> str:
         """
-        Write the whole config of the current environment, as JSON, to its SSM
-        parameter, :attr:`~cookiecutter_aws_lbd_demo.config.config_01_name.ConfigNameMixin.ssm_param_name_config`,
-        in the account of that environment.
+        Make the SSM parameter of the current environment,
+        :attr:`~cookiecutter_aws_lbd_demo.config.config_01_name.ConfigNameMixin.ssm_param_name_config`,
+        hold its whole config as JSON. It writes only when the parameter is
+        missing or its value differs, so deploying an unchanged config (as every
+        ``cdk-up-<env>-*`` task does) does not burn one of the 100 versions SSM
+        keeps per parameter.
 
         It is a ``SecureString``, because the ``-secret`` config files go into it
         too. The ``Intelligent-Tiering`` tier switches to an advanced parameter
-        (8 KB) only when the value is over the 4 KB of a standard one.
-        This is done with boto3, not CDK, so no value ends up in a CloudFormation
-        template.
+        (8 KB) only when the value is over the 4 KB of a standard one. This is
+        done with boto3, not CDK, so no value ends up in a CloudFormation template.
+
+        :returns: ``"created"``, ``"updated"``, or ``"unchanged"``.
         """
+        ssm = simple_aws_ssm_parameter_store
         config = self.config
         value = config.model_dump_json()
-        self.ssm_client.put_parameter(
-            Name=config.ssm_param_name_config,
-            Value=value,
-            Type="SecureString",
-            Overwrite=True,
-            Tier="Intelligent-Tiering",
+        before, after = ssm.put_parameter_if_changed(
+            ssm_client=self.ssm_client,
+            name=config.ssm_param_name_config,
+            value=value,
+            type=ssm.ParameterType.SECURE_STRING,
+            tier=ssm.ParameterTier.INTELLIGENT_TIERING,
         )
+        if before is None:
+            status = "created"
+            detail = f"version {after.version}"
+        elif after is None:
+            status = "unchanged"
+            detail = f"version {before.version}, nothing written"
+        else:
+            status = "updated"
+            detail = f"version {before.version} -> {after.version}"
         print(
-            f"Deployed config of {config.env_name!r} ({len(value)} bytes) "
-            f"to SSM parameter {config.ssm_param_name_config}"
+            f"Config of {config.env_name!r} {status} ({detail}, {len(value)} bytes): "
+            f"SSM parameter {config.ssm_param_name_config}"
         )
         print(f"  {config.ssm_param_url_config}")
+        return status
 
-    def delete_config(self: One):  # pragma: no cover
+    def delete_config(self: One) -> bool:
         """
         Delete the SSM parameter of :meth:`deploy_config`. The Lambda functions
         of this environment fail to load their config after this, so do it after
         ``cdk-down``, which does not delete it. Deleting a missing parameter is
         not an error.
+
+        :returns: ``True`` if it was deleted, ``False`` if it did not exist.
         """
         config = self.config
-        try:
-            self.ssm_client.delete_parameter(Name=config.ssm_param_name_config)
-            print(
-                f"Deleted config of {config.env_name!r}: "
-                f"SSM parameter {config.ssm_param_name_config}"
-            )
-        except self.ssm_client.exceptions.ParameterNotFound:
-            print(
-                f"Config of {config.env_name!r} is not deployed: "
-                f"no SSM parameter {config.ssm_param_name_config}"
-            )
+        deleted = simple_aws_ssm_parameter_store.delete_parameter(
+            ssm_client=self.ssm_client,
+            name=config.ssm_param_name_config,
+        )
+        status = "deleted" if deleted else "not found, nothing deleted"
+        print(
+            f"Config of {config.env_name!r} {status}: "
+            f"SSM parameter {config.ssm_param_name_config}"
+        )
         print(f"  {config.ssm_param_url_config}")
+        return deleted
 
     # --------------------------------------------------------------------------
     # Layer

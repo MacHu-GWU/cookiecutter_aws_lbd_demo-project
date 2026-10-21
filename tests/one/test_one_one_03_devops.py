@@ -8,6 +8,8 @@ import subprocess
 from pathlib import Path
 from pathlib import PurePath
 
+import moto
+import boto3
 import aws_cdk as cdk
 
 from cookiecutter_aws_lbd_demo.paths import path_enum
@@ -65,6 +67,45 @@ def test_print_lambda_layer_versions(config: Config, capsys):
     assert "#/layers/my_project/versions/2" in out
     assert "my-devops-artifacts?prefix=projects/my_project/lambda/" in out
     assert "set lambda_layer_version: 2 in config/config-dev.json5" in out
+
+
+def test_deploy_and_delete_config(config: Config, capsys):
+    """
+    The parameter is written only when the config changed, so an unchanged
+    deploy adds no version; each call prints its status and the console URL.
+    """
+    with moto.mock_aws():
+        one = One()
+        one.config = config
+        one.ssm_client = boto3.client("ssm", region_name="us-east-1")
+
+        assert one.deploy_config() == "created"
+        assert one.deploy_config() == "unchanged"
+        out = capsys.readouterr().out
+        assert "Config of 'dev' created (version 1, " in out
+        assert "Config of 'dev' unchanged (version 1, nothing written, " in out
+        assert config.ssm_param_url_config in out
+
+        one.config = config.model_copy(update={"lambda_layer_version": 8})
+        assert one.deploy_config() == "updated"
+        assert "updated (version 1 -> 2, " in capsys.readouterr().out
+        response = one.ssm_client.get_parameter(
+            Name=config.ssm_param_name_config,
+            WithDecryption=True,
+        )
+        assert response["Parameter"]["Type"] == "SecureString"
+        assert (
+            Config.model_validate_json(
+                response["Parameter"]["Value"]
+            ).lambda_layer_version
+            == 8
+        )
+
+        assert one.delete_config() is True
+        assert one.delete_config() is False
+        out = capsys.readouterr().out
+        assert "Config of 'dev' deleted: " in out
+        assert "Config of 'dev' not found, nothing deleted: " in out
 
 
 def _relpaths(dir_build: Path) -> list[PurePath]:
