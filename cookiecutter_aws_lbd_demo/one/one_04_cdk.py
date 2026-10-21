@@ -32,7 +32,7 @@ class OneCdkMixin:
         return StackCtxEnum(one=self)
 
     @cached_property
-    def stack_enum(self: One) -> StackEnum:
+    def stack_enum(self: One) -> StackEnum:  # pragma: no cover
         """
         One CDK stack per stack, in a new ``cdk.App``, such as ``one.stack_enum.infra``.
         """

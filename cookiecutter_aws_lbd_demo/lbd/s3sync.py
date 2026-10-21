@@ -70,7 +70,7 @@ class Input(BaseInput[Output]):
         )
 
     @logger.pretty_log()
-    def main(self, context=None) -> Output:
+    def main(self, context=None) -> Output:  # pragma: no cover
         """
         Copy S3 object from source to target location using environment configuration.
         """

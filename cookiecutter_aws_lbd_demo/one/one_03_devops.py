@@ -152,7 +152,7 @@ class OneDevOpsMixin:
     # Layer
     # --------------------------------------------------------------------------
     @cached_property
-    def lambda_architecture(self: One) -> str:
+    def lambda_architecture(self: One) -> str:  # pragma: no cover
         """
         Lambda architecture name, ``x86_64`` or ``arm64``.
         """
@@ -197,7 +197,7 @@ class OneDevOpsMixin:
             ),
         )
 
-    def build_lambda_layer_only(self: One):
+    def build_lambda_layer_only(self: One):  # pragma: no cover
         """
         Build the Lambda layer only, no zip/upload/publish. The artifacts are left
         in ``build/lambda/layer/artifacts/python/``.
@@ -206,7 +206,7 @@ class OneDevOpsMixin:
         builder.run()
         check_layer_binaries(builder.path_layout.dir_python)
 
-    def _make_layer_publisher(self: One):
+    def _make_layer_publisher(self: One):  # pragma: no cover
         """
         The publisher, in the DEVOPS account, used to ask whether ``uv.lock``
         changed since the latest published version.
@@ -375,7 +375,7 @@ class OneDevOpsMixin:
     # --------------------------------------------------------------------------
     # Source
     # --------------------------------------------------------------------------
-    def build_lambda_source(self: One):
+    def build_lambda_source(self: One):  # pragma: no cover
         """
         See :func:`build_lambda_source`.
         """

@@ -448,12 +448,12 @@ requires-dist = [
     { name = "s3pathlib", specifier = ">=3.0.0,<4.0.0" },
     { name = "simple-aws-lambda", marker = "extra == 'dev'", specifier = ">=0.3.1,<1.0.0" },
     { name = "simple-aws-ssm-parameter-store", specifier = ">=0.3.0,<1.0.0" },
-    { name = "soft-deps", specifier = ">=0.1.1,<1.0.0" },
+    { name = "soft-deps", specifier = ">=0.2.0,<1.0.0" },
     { name = "sphinx", marker = "extra == 'doc'", specifier = ">=7.4.7,<8.0.0" },
     { name = "sphinx-copybutton", marker = "extra == 'doc'", specifier = ">=0.5.2,<1.0.0" },
     { name = "sphinx-design", marker = "extra == 'doc'", specifier = ">=0.6.1,<1.0.0" },
     { name = "sphinx-jinja", marker = "extra == 'doc'", specifier = ">=2.0.2,<3.0.0" },
-    { name = "vislog", specifier = ">=0.1.2,<1.0.0" },
+    { name = "vislog", specifier = ">=0.1.3,<1.0.0" },
 ]
 provides-extras = ["dev", "test", "doc", "mise"]
 
@@ -1460,11 +1460,11 @@ wheels = [
 
 [[package]]
 name = "soft-deps"
-version = "0.1.1"
+version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/59/2f/3d5532c4563ff723de944de32c5068328bff01d65e99dd852ee98468d30b/soft_deps-0.1.1.tar.gz", hash = "sha256:06821b012cdc3d2c0585bc13b3eb7816b779ab27e2b8dfdfef6d5c761ec982b8", size = 7776, upload-time = "2025-06-30T21:01:44.653Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/68/dc/45a77176200e8c4063da12a0a4ce35babdcd489e467285ccb1c39ecdb0af/soft_deps-0.2.0.tar.gz", hash = "sha256:47bb85af1add2e0f05633351eb9eaea30c8a1d97e59cf666535d332542644c4f", size = 14599, upload-time = "2026-10-21T02:17:59.209Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fa/d4/6c267222eed51422cfd9d37a55d3d59bf1a82eda4b393cd0a583c08a55b2/soft_deps-0.1.1-py3-none-any.whl", hash = "sha256:40299ae5b0795d54e088ef72c8dc78ea927f87e430f8d685632bcdb46bed8098", size = 8741, upload-time = "2025-06-30T21:01:43.658Z" },
+    { url = "https://files.pythonhosted.org/packages/1e/69/7b2ec8f74f3c51c256c20b0b34469b442da47330b5bdcfde7e0d6fcd5785/soft_deps-0.2.0-py3-none-any.whl", hash = "sha256:e0f875f405d3631a36f469b45d4ec84eef4a66c7ff82e7106bc688fcc72181eb", size = 10924, upload-time = "2026-10-21T02:18:00.568Z" },
 ]
 
 [[package]]
@@ -1718,11 +1718,11 @@ wheels = [
 
 [[package]]
 name = "vislog"
-version = "0.1.2"
+version = "0.1.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/54/75/7c41faeafb961873c16284140cfd27f0cc00581a85c7cf8abe41d75f9490/vislog-0.1.2.tar.gz", hash = "sha256:25a2f1f4285a9cfb113a5e55401845d3562f949492bec329daeb23d7b144bb70", size = 14444, upload-time = "2024-06-16T20:19:28.612Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a5/21/ea82bd08939c4dd84655f2b6e3ff2a8a1c4773e03e06596c7effe96deac2/vislog-0.1.3.tar.gz", hash = "sha256:c164d85703d8cac5f297c21ec9b7db20d70aacded10550366fd3cf5ddd95b4a4", size = 15971, upload-time = "2026-04-28T21:35:31.502Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6c/3d/0af2747f3549dca069021cd722770d8dcac5b2a25417652566fe540fc343/vislog-0.1.2-py3-none-any.whl", hash = "sha256:21311339dda1e7ba7164a7e2ee0c3806a2578e9ded94b93cf6cb13bc19c405a0", size = 12583, upload-time = "2024-06-16T20:19:25.571Z" },
+    { url = "https://files.pythonhosted.org/packages/a7/0b/d2e5d6bc24abcf1520145601745fdfd7db17a8ffaac895f507ec448aecd0/vislog-0.1.3-py3-none-any.whl", hash = "sha256:faa40c8165d8c813b7c0dd9abd18d84d733bebe51e1c32910f2f490ad3f0357c", size = 12077, upload-time = "2026-04-28T21:35:30.222Z" },
 ]
 
 [[package]]

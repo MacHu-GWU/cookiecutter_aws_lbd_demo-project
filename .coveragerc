@@ -6,6 +6,8 @@ omit =
     cookiecutter_aws_lbd_demo/tests/*
     cookiecutter_aws_lbd_demo/vendor/*
     cookiecutter_aws_lbd_demo/paths.py
+    # only imports the handlers
+    cookiecutter_aws_lbd_demo/lambda_function.py
     # only testable against a deployed stack, see tests_int/
     cookiecutter_aws_lbd_demo/cdk/stacks/*_stack_exports.py
     # dev tooling; tests/cdk/test_cdk_mise_tasks.py only checks mise.toml is current
