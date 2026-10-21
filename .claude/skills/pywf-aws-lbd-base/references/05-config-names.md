@@ -31,10 +31,10 @@ Group the properties by resource type, under a `# ---` banner comment per type. 
 
 ## 4. Quick links
 
-`QUICK_LINKS.md` at the repo root holds the console URL of every resource of the project, one table per environment, so a maintainer finds a resource without running a command. `mise run gen-quick-links` renders it from the config files with `<package_name>/quick_links.py`, without an AWS call, and it is committed.
+`QUICK_LINKS.md` at the repo root holds the console URL of every resource of the project, one table per environment, so a maintainer finds a resource without running a command. `mise run gen-quick-links` renders it from the config files with `.mise/tasks/gen-quick-links.py`, without an AWS call, and it is committed. The script only arranges URL properties the config already has.
 
-- A new URL property gets a row in `quick_links.py`.
+- A new URL property gets a row in `gen-quick-links.py`.
 - It holds no account ID: no ARN, and no URL with the account ID in it, such as the bootstrap bucket of the deployment tool.
-- Run the task after changing the config; a unit test fails while the committed file is out of date.
+- Run the task after adding, removing, or renaming a resource; nothing checks the file automatically.
 
-Seed repo: [`quick_links.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/quick_links.py), [`QUICK_LINKS.md`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/QUICK_LINKS.md).
+Seed repo: [`gen-quick-links.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/.mise/tasks/gen-quick-links.py), [`QUICK_LINKS.md`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/QUICK_LINKS.md).

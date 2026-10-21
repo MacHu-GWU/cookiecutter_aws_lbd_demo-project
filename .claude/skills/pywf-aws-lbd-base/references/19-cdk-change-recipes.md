@@ -10,7 +10,7 @@ Finish every recipe with section 6.
 
 ## 1. Add a stack `<x>`
 
-1. Config names (`05-config-names.md`, `14-cdk-layout.md`): `cft_stack_name_<x>`, `cft_stack_url_<x>`, and the names of its resources; add them to the names test, and a row for each console URL to `quick_links.py`.
+1. Config names (`05-config-names.md`, `14-cdk-layout.md`): `cft_stack_name_<x>`, `cft_stack_url_<x>`, and the names of its resources; add them to the names test, and a row for each console URL to `.mise/tasks/gen-quick-links.py`.
 2. The stack (`14-cdk-layout.md`): `stacks/<x>_stack.py`, or `stacks/<x>_stack/` with mixins.
 3. An entry `<x>` in both enums, after the stacks it depends on (`15-cdk-stack-enums.md`).
 4. If it has outputs: `stacks/<x>_stack_exports.py` and its `tests_int/` test (`16-cdk-stack-exports.md`).

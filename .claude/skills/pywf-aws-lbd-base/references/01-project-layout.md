@@ -39,3 +39,11 @@ mise loads `.env` for every task. Seed repo: [`.env.example`](https://github.com
 
 - `tests/` (`mise run cov`): unit tests, no AWS call. `tests/conftest.py` forces the local runtime and `ENV_NAME=dev`, points `path_enum.dir_config` at a copy of the committed config files plus fake `-secret` files, and gives a `config` fixture with fixed values.
 - `tests_int/` (`mise run int-test`): integration tests against what is deployed in `ENV_NAME`. They call and write to AWS, so they need the user's yes.
+
+---
+
+## 4. Package code or task script
+
+- `.mise/tasks/*.py` are the entry points of `mise run` tasks: each imports the package, nothing imports them, and they have no tests. A script that only arranges or prints values the package already computes lives here.
+- Code that runs where the project is deployed, the config and its names, `one`, and the infrastructure definitions live in the package.
+- A generator whose output decides what a deployment does lives in the package too, with one unit test that the committed output is current; it is left out of coverage in `.coveragerc`.

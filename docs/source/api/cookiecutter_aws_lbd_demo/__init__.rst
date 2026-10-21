@@ -20,6 +20,5 @@ sub packages and modules
     lambda_function <lambda_function>
     lazy_imports <lazy_imports>
     logger <logger>
-    quick_links <quick_links>
     runtime <runtime>
     

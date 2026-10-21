@@ -18,7 +18,7 @@ Seed repo: [`tests/cdk/`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo
 
 - `test_cdk_stack_ctx_enum.py`: entry names, and the values of one `StackCtx`.
 - `test_cdk_stack_enum.py`: the entry lists of both enums match, a full synth, and the dependencies between stacks. It also reads the synthesized template for the few values a name test cannot cover, such as the environment variables and the layer ARN of every function. Update its expected lists when adding a stack.
-- `test_cdk_mise_tasks.py`: task names, the rendered block, and that `mise.toml` is up to date.
+- `test_cdk_mise_tasks.py`: only that the generated block of `mise.toml` is up to date; the generator itself is left out of coverage (`01-project-layout.md`).
 
 None of them call AWS; all run in `mise run cov`.
 

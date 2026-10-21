@@ -8,6 +8,8 @@ omit =
     cookiecutter_aws_lbd_demo/paths.py
     # only testable against a deployed stack, see tests_int/
     cookiecutter_aws_lbd_demo/cdk/stacks/*_stack_exports.py
+    # dev tooling; tests/cdk/test_cdk_mise_tasks.py only checks mise.toml is current
+    cookiecutter_aws_lbd_demo/cdk/mise_tasks.py
 
 [report]
 # Regexes for lines to exclude from consideration
