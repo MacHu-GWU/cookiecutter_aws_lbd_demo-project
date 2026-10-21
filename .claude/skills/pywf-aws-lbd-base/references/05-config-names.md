@@ -35,6 +35,6 @@ Group the properties by resource type, under a `# ---` banner comment per type. 
 
 - A new URL property gets a row in `quick_links.py`.
 - It holds no account ID: no ARN, and no URL with the account ID in it, such as the bootstrap bucket of the deployment tool.
-- Run the task after changing the config. `tests/test_quick_links.py` fails when the committed file is out of date; it needs the `-secret` files, so it is skipped where they are missing, such as in CI.
+- Run the task after changing the config; a unit test fails while the committed file is out of date.
 
 Seed repo: [`quick_links.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/quick_links.py), [`QUICK_LINKS.md`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/QUICK_LINKS.md).

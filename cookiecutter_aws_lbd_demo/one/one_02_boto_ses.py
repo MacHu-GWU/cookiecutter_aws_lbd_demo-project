@@ -6,8 +6,8 @@ The AWS session part of ``one``:
 - :attr:`~OneBotoSesMixin.bsm`, the boto session of the current environment,
   and the clients built from it. The account and region are
   ``one.config.aws_account_id`` / ``one.config.aws_region``.
-- :attr:`~OneBotoSesMixin.bsm_devops`, the boto session of the ``devops`` environment,
-  which owns the Lambda layer. Only deploy scripts on a developer machine use it.
+- :attr:`~OneBotoSesMixin.bsm_devops`, the boto session of the ``devops``
+  environment, which owns the Lambda layer.
 """
 
 from __future__ import annotations

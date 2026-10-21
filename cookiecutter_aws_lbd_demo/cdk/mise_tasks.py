@@ -5,19 +5,10 @@ Generate the ``<cdk-stack-tasks>`` block of ``mise.toml`` (``mise run cdk-gen-ta
 four tasks per (environment, stack), ``cdk-<action>-<env>-<stack>-stack``, plus
 four ``cdk-<action>-<env>-all`` per environment. Each task prints the console URL
 of the stacks it acts on, then runs one plain cdk command in ``cdk/`` with
-``ENV_NAME`` and ``--profile {{env.AWS_PROFILE_FOR_<ENV>}}``. See the ``pywf-aws-lbd-base`` skill, ``17-cdk-mise-tasks.md``.
-
-Two Lambda specific additions:
-
-- Every cdk task depends on ``lambda-source-build``, because the lbd stack
-  deploys ``build/lambda/source/build/`` with ``Code.from_asset``; every ``up``
-  task also depends on ``lambda-layer-check-<env>`` (fail early if the layer
-  version is missing or not shared) and ``config-deploy-<env>``, so code and
-  config ship together.
-- Per environment, ``config-deploy-<env>`` / ``config-delete-<env>`` (write /
-  delete its config in SSM) and ``cdk-gc-<env>`` (list unused CDK assets in the
-  bootstrap bucket; print only). ``config-deploy-all`` / ``config-delete-all``
-  do every environment.
+``ENV_NAME`` and ``--profile {{env.AWS_PROFILE_FOR_<ENV>}}``. Per environment it
+also renders ``config-deploy-<env>``, ``config-delete-<env>``,
+``lambda-layer-check-<env>``, and ``cdk-gc-<env>``, and then ``config-deploy-all``
+and ``config-delete-all``.
 
 The stacks are the entries of :class:`~cookiecutter_aws_lbd_demo.cdk.stack_ctx_enum.StackCtxEnum`,
 the environments the workload members of :class:`~cookiecutter_aws_lbd_demo.env.EnvNameEnum`;

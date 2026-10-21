@@ -1,15 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Unit test for the ``hello`` Lambda function.
-
-Tests the business logic directly by instantiating ``Input`` and calling
-``main()`` — no AWS services involved.  The ``disable_logger`` fixture
-suppresses log output for cleaner test output.
-
-This is the simplest example of the before / run / after testing pattern. It
-has no state to prepare (no "before"): "run" builds the Pydantic ``Input`` and
-calls ``main()``, "after" asserts on the ``Output`` fields.
+Unit test of the hello function: calls ``Input.main`` directly.
 """
 
 from cookiecutter_aws_lbd_demo.lbd.hello import Input

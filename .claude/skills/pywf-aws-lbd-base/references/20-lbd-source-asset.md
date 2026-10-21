@@ -27,18 +27,10 @@ CDK's asset hash covers each file's relative path and content, not its time stam
 
 - `LAMBDA_SOURCE_INCLUDE` is a whitelist, `["*.py"]` by default. Add a pattern such as `"*.json"` when a function reads data files next to its code.
 - `LAMBDA_SOURCE_EXCLUDE` drops dev-only folders: `tests/`, `docs/`, `vendor/`, and the CDK code, which needs `aws_cdk` (`10-lbd-dependencies.md`).
-- Patterns go through `PurePath.match`, anchored at the end of the path relative to the package, and `*` matches one path part. So `"tests/*"` drops `tests/a.py` but not `tests/sub/a.py`: keep those folders flat, or add one pattern per depth (`"cdk/*"`, `"cdk/*/*"`).
+- An excluded folder with subfolders needs one pattern per depth, such as `"cdk/*"`, `"cdk/*/*"`; the docstring of `LAMBDA_SOURCE_EXCLUDE` says why.
 
 ---
 
-## 4. Tests
-
-- Two builds into different folders, with a file's time stamp changed in between, have the same `aws_cdk.FileSystem.fingerprint`.
-- Every built file matches `LAMBDA_SOURCE_INCLUDE`, none is under an excluded folder at any depth, and a stale file from an earlier build is gone.
-- `<package_name>.lambda_function` imports in a subprocess whose path has the built folder and the venv's packages only, so no deployed module needs a file that was left out.
-
----
-
-## 5. Old assets
+## 4. Old assets
 
 Each code change leaves its old zip in the bootstrap bucket. `mise run cdk-gc-<env>` lists the ones no deployed stack uses (`--action=print`). It scans every stack of the account and region, so environments sharing an account are safe. Deleting them is a separate run with `--action=full`, after the user's yes.

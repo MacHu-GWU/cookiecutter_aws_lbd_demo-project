@@ -21,8 +21,7 @@ The config is edited only in `config/*.json5` (`07-config-load.md`). Each worklo
 - **Only when it changed:** `put_parameter_if_changed` of `simple_aws_ssm_parameter_store` writes only when the parameter is missing or its value differs. An unchanged config writes nothing and does not use up one of the 100 versions SSM keeps, so every `cdk-up` can deploy it safely.
 - **`SecureString`,** because the `-secret` values are in it; tier `Intelligent-Tiering`, which turns advanced (8 KB) only when the value outgrows 4 KB. A unit test keeps each environment's JSON under 3000 bytes as an early warning.
 - **boto3, not the infrastructure code,** so no value ends up in a template.
-- It prints `created`, `updated` (with the version change), or `unchanged`, and the console URL of the parameter.
-- `mise run config-delete-<env>` / `config-delete-all` delete it, and print `deleted` or `not found`. Destroying the stacks does not delete it.
+- `mise run config-delete-<env>` / `config-delete-all` delete it. Destroying the stacks does not delete it.
 
 ---
 
@@ -30,19 +29,13 @@ The config is edited only in `config/*.json5` (`07-config-load.md`). Each worklo
 
 - The runtime `aws_lambda` (`02-runtime.md`) is detected by `AWS_LAMBDA_FUNCTION_NAME`, which Lambda always sets.
 - Every function gets the environment variable `CONFIG_SSM_PARAM_NAME`, the parameter name, plus `ENV_NAME`. No other config goes into environment variables.
-- `Config.load` on `aws_lambda` calls `Config.load_from_ssm(ssm_client, name)`, which reads the parameter with decryption (`get_parameter` of `simple_aws_ssm_parameter_store`) and raises `ValueError` if it does not exist. The client is passed in; `one.config` passes `one.ssm_client`.
+- `Config.load` on `aws_lambda` reads that parameter with `Config.load_from_ssm`; `one.config` passes it `one.ssm_client`.
 - On `aws_lambda`, `one.bsm` reads nothing from the config: the region and the credentials come from the Lambda environment and the execution role. Otherwise loading the config would need the config (`06-boto-session.md`).
 - `one.config` is a `cached_property` on every runtime (`08-one-singleton.md`): a container loads the config on first use and keeps it for its whole life, across warm invocations. Do not preload it in `lambda_function.py`; the first request loads it anyway.
-- The execution role needs `ssm:GetParameter` on that one parameter. The parameter is encrypted with the AWS managed key `aws/ssm`, whose key policy already lets every principal of the account decrypt through SSM, so no KMS permission is needed.
+- The execution role needs `ssm:GetParameter` on that one parameter, and no KMS permission (`aws/ssm` key).
 
 ---
 
 ## 4. A new config means a redeploy
 
 The config is part of what is deployed, like the code: no hot reload, no parameter cache. Writing the parameter alone changes nothing a running container sees. So the Lambda stack puts `config.config_hash` (sha256 of the config JSON) into each function's `CONFIG_HASH` environment variable: a new config changes the template, `cdk-up-<env>-*` updates the functions, and every container that loaded the old config is replaced. Since every `up` task deploys the config first, `cdk-up-<env>-all` ships a config change on its own.
-
----
-
-## 5. Testing
-
-The config tests write the parameter to moto, set `CONFIG_SSM_PARAM_NAME`, load with `runtime_name="aws_lambda"`, and check the result equals the local `Config`; a missing parameter raises `ValueError`. The deploy test runs created, unchanged, updated, deleted, and not found against moto.

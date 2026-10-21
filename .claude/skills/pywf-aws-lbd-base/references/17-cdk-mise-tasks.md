@@ -43,7 +43,7 @@ Seed repo: [`mise_tasks.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_d
 
 ## 4. `print-cdk-stack-urls`
 
-`mise run print-cdk-stack-urls` prints the console URL of every stack in every environment, without calling AWS. An environment whose config fails to load (such as one without its secret file) prints an error line, and the others still print.
+`mise run print-cdk-stack-urls` prints the console URL of every stack in every environment, without calling AWS.
 
 ---
 

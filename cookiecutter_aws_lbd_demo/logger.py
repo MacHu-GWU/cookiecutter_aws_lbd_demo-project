@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Project-level logger setup.
-
-A single ``logger`` instance is created here and imported everywhere else.
-Using one shared logger (named after the package) means all log output from
-this project can be filtered or silenced uniformly — e.g., via the
-``disable_logger`` pytest fixture in ``tests/conftest.py``.
+The logger of the package; the ``disable_logger`` pytest fixture silences it.
 """
 
 from vislog import VisLog
@@ -18,5 +13,5 @@ logger = VisLog(
     log_format="%(message)s",
 )
 """
-Module-level singleton logger — import this from any module in the package.
+The single logger of this project.
 """

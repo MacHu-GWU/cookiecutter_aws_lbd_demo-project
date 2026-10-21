@@ -1,20 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """
-The DevOps part of ``one``: everything a developer runs from a local machine to
-ship this project, besides ``cdk deploy``.
-
-- **Config:** :meth:`~OneDevOpsMixin.deploy_config` writes the config of the
-  current environment to SSM, where the Lambda functions read it.
-- **Layer:** :meth:`~OneDevOpsMixin.deploy_lambda_layer` builds the layer of the
-  ``[project] dependencies``, publishes it in the DEVOPS account, and grants every
-  environment's account access to it. One layer serves every environment;
-  ``lambda_layer_version`` in ``config-<env>.json5`` picks the version.
-- **Source:** :meth:`~OneDevOpsMixin.build_lambda_source` copies the package's
-  source files to a folder that the lbd stack deploys with ``Code.from_asset``.
-
-The build tools are dev dependencies, imported through ``lazy_imports``, so this
-module is safe to import inside Lambda.
+The deploy steps of ``one`` other than ``cdk deploy``: the config in SSM, the
+Lambda layer, and the Lambda source. Safe to import in Lambda: the build tools
+come through ``lazy_imports``.
 """
 
 from __future__ import annotations
@@ -81,14 +70,10 @@ def check_layer_binaries(dir_python: Path):
 
 def build_lambda_source(dir_build: Path = path_enum.dir_build_lambda_source_build):
     """
-    Copy the package's source files to ``dir_build/<package_name>/``, the folder
-    the lbd stack deploys with ``Code.from_asset``.
-
-    Only files matching :data:`~cookiecutter_aws_lbd_demo.constants.LAMBDA_SOURCE_INCLUDE`
-    are copied, not an installed package: the ``dist-info`` of an install has
-    absolute paths in it, which would change the asset hash on every machine.
-    The folder is wiped first, so its content, and so the CDK asset hash, only
-    depends on the source files.
+    Copy the package files matching :data:`~cookiecutter_aws_lbd_demo.constants.LAMBDA_SOURCE_INCLUDE`
+    to ``dir_build/<package_name>/``, the folder the lbd stack deploys with
+    ``Code.from_asset``. The folder is wiped first, so the CDK asset hash
+    depends only on the source files.
     """
     shutil.rmtree(dir_build, ignore_errors=True)
     aws_lbd_art_builder_core.copy_source_for_lambda_deployment(
@@ -109,17 +94,9 @@ class OneDevOpsMixin:
     # --------------------------------------------------------------------------
     def deploy_config(self: One) -> str:
         """
-        Make the SSM parameter of the current environment,
-        :attr:`~cookiecutter_aws_lbd_demo.config.config_01_name.ConfigNameMixin.ssm_param_name_config`,
-        hold its whole config as JSON. It writes only when the parameter is
-        missing or its value differs, so deploying an unchanged config (as every
-        ``cdk-up-<env>-*`` task does) does not burn one of the 100 versions SSM
-        keeps per parameter.
-
-        It is a ``SecureString``, because the ``-secret`` config files go into it
-        too. The ``Intelligent-Tiering`` tier switches to an advanced parameter
-        (8 KB) only when the value is over the 4 KB of a standard one. This is
-        done with boto3, not CDK, so no value ends up in a CloudFormation template.
+        Write the whole config of the current environment as JSON to its SSM
+        parameter, :attr:`~cookiecutter_aws_lbd_demo.config.config_01_name.ConfigNameMixin.ssm_param_name_config`,
+        a ``SecureString``, only when the parameter is missing or differs.
 
         :returns: ``"created"``, ``"updated"``, or ``"unchanged"``.
         """
@@ -151,10 +128,9 @@ class OneDevOpsMixin:
 
     def delete_config(self: One) -> bool:
         """
-        Delete the SSM parameter of :meth:`deploy_config`. The Lambda functions
-        of this environment fail to load their config after this, so do it after
-        ``cdk-down``, which does not delete it. Deleting a missing parameter is
-        not an error.
+        Delete the SSM parameter of :meth:`deploy_config`; ``cdk-down`` does not.
+        The functions of this environment fail after this. A missing parameter
+        is not an error.
 
         :returns: ``True`` if it was deleted, ``False`` if it did not exist.
         """
@@ -191,15 +167,9 @@ class OneDevOpsMixin:
 
     def _make_layer_builder(self: One):
         """
-        Create the layer builder for this project.
-
-        - **local (default):** ``uv sync --python-platform`` on the host. uv
-          downloads the Linux wheels directly, so no Docker is needed.
-          ``--no-build`` makes uv fail loudly if a dependency has no Linux wheel,
-          instead of silently compiling a macOS binary into the layer.
-        - **container** (``lambda_layer_build_in_container: true``): ``uv sync``
-          inside the AWS SAM build image, which needs Docker. Use it only when a
-          dependency ships source only and has C extensions.
+        The layer builder: ``uv sync`` for Linux on the host, or in the AWS SAM
+        image (Docker) when ``lambda_layer_build_in_container`` is set.
+        ``--no-build`` fails on a dependency that has no Linux wheel.
         """
         layer_api = aws_lbd_art_builder_uv.layer_api
         py_major, py_minor = self.lambda_python_version_tuple
@@ -251,14 +221,11 @@ class OneDevOpsMixin:
 
     def deploy_lambda_layer(self: One):  # pragma: no cover
         """
-        Full Lambda layer pipeline, in the DEVOPS account:
-        Build → Package (zip) → Upload (S3) → Publish → Grant.
+        Build, zip, upload, and publish the layer in the DEVOPS account if
+        ``uv.lock`` changed, then grant every environment the latest version.
 
-        ``LayerDeploymentWorkflow`` only finds out that ``uv.lock`` is unchanged
-        after it has already built, zipped and uploaded, then raises
-        ``ValueError``. So we ask the publisher first and skip to the grant step
-        when there is nothing new to publish. The grant always runs, so an
-        account added to a config gets access to the latest version.
+        It asks the publisher first: ``LayerDeploymentWorkflow`` would build,
+        zip and upload before finding ``uv.lock`` unchanged and raising ``ValueError``.
         """
         publisher = self._make_layer_publisher()
         if publisher.has_dependency_manifest_changed() is False:
@@ -328,12 +295,9 @@ class OneDevOpsMixin:
 
     def check_lambda_layer_access(self: One) -> bool:  # pragma: no cover
         """
-        Check that the account of the current environment can use the layer
-        version of its config, the way CloudFormation will when it creates the
-        functions: ``GetLayerVersion`` with the environment's own credentials.
-
-        Lambda answers a missing cross-account layer version and a missing
-        permission with the same access denied error, so the message covers both.
+        Check that the current environment can use its pinned layer version:
+        ``GetLayerVersion`` with its own credentials, as CloudFormation will.
+        A missing version and a missing grant give the same error.
 
         :returns: ``True`` if the layer version is usable.
         """
@@ -368,11 +332,11 @@ class OneDevOpsMixin:
         real_run: bool = False,
     ) -> list[int]:  # pragma: no cover
         """
-        Delete old versions of the layer in the DEVOPS account.
+        Delete old layer versions in the DEVOPS account, keeping the latest
+        ``keep_last_n_versions`` and every version a config on this machine pins.
+        Without ``real_run`` it only prints.
 
-        It keeps the latest ``keep_last_n_versions``, and every version some
-        environment's config uses. Without ``real_run`` it only prints what it
-        would delete.
+        :returns: the versions to delete.
         """
         lambda_client = self.bsm_devops.lambda_client
         layer_name = self.config.lambda_layer_name

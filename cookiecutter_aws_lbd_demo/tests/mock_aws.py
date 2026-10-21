@@ -1,27 +1,11 @@
 # -*- coding: utf-8 -*-
 
 """
-AWS service mocking infrastructure with configurable mock/real switching.
-
-**Why support both mocked and real AWS in the same test class?**
-
-- **Mocked tests (``use_mock=True``, default)** run fast, need no AWS
-  credentials, and are safe to execute in CI.  They use `moto
-  <https://github.com/getmoto/moto>`_ to intercept boto calls in-process.
-
-- **Real-AWS tests (``use_mock=False``)** catch issues that moto cannot
-  reproduce: IAM permission gaps, region-specific service behavior, S3
-  eventual-consistency edge cases, and quota limits.  These are typically run
-  as integration tests (see ``tests_int/``) against a real AWS account.
-
-By toggling a single ``use_mock`` flag on the test class, the same test logic
-can run in both modes.  This avoids maintaining two parallel test suites and
-ensures that the assertions stay in sync.
-
-**Usage pattern**::
+A base test class that runs against moto (``use_mock = True``, the default) or
+against real AWS (``use_mock = False``), so the same test logic serves both::
 
     class TestMyFeature(BaseMockAwsTest):
-        use_mock = True  # flip to False for integration testing
+        use_mock = True
 
         @classmethod
         def setup_class_post_hook(cls):

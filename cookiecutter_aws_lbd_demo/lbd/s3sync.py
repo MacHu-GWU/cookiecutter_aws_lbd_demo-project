@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-This lambda function is triggered by S3 put event and copy the file from source
-to target bucket. The target bucket is defined in the configuration.
+Triggered by a new object under ``config.s3dir_source``; copies it to the same
+relative path under ``config.s3dir_target``.
 """
 
 import typing as T

@@ -1,19 +1,13 @@
 # -*- coding: utf-8 -*-
 
 """
-Deployment environment detection: which environment (dev, tst, prd) this project targets.
-
-A single code base usually deploys the same stacks to several environments.
-Instead of reading ``os.environ`` in every module, code asks the module-level
-:data:`env` singleton, so the detection rule lives in one place::
+Which environment this code targets, from ``ENV_NAME``. Ask the :data:`env`
+singleton instead of reading ``os.environ``::
 
     from .env import env
 
     if env.current_env_name == "prd":
         ...
-
-The value is computed on first access and cached, so importing this module
-has no side effect.
 """
 
 from __future__ import annotations
@@ -25,14 +19,11 @@ from functools import cached_property
 
 class EnvNameEnum(enum.Enum):
     """
-    Every environment of this project: one ``devops`` environment, plus the
-    workload environments (:meth:`get_workloads`) the application is deployed to.
-    Several of them may share one AWS account; resource names keep them apart.
+    Every environment of this project: ``devops``, plus the workload environments
+    (:meth:`get_workloads`) the application is deployed to.
     """
 
-    #: Shared tooling, such as the Lambda layer every workload environment uses.
-    #: Nothing of the application is deployed to it, so it has no config file,
-    #: no stack, and no config in SSM.
+    #: Shared tooling: the Lambda layer every workload environment uses.
     devops = "devops"
     #: Development, where engineers deploy and test freely.
     dev = "dev"
@@ -67,9 +58,7 @@ class Env:
         Work out the current environment; :attr:`current_env_name` caches the result.
 
         It reads the ``ENV_NAME`` environment variable, and defaults to
-        :attr:`EnvNameEnum.dev` when it is not set. Locally, ``.env`` may set it;
-        each ``cdk-<action>-<env>-*`` mise task sets it for its own process, and the
-        cdk CLI passes it on to the cdk app.
+        :attr:`EnvNameEnum.dev` when it is not set.
 
         :raises ValueError: ``ENV_NAME`` is not a member of :class:`EnvNameEnum`.
         """

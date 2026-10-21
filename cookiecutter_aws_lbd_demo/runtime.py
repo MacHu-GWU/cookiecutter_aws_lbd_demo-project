@@ -1,22 +1,13 @@
 # -*- coding: utf-8 -*-
 
 """
-Runtime detection: where this code is running (a developer's machine, CI, or
-inside an AWS Lambda function).
-
-Some behavior differs by runtime. For example, locally the config comes from
-``config/*.json5`` and the AWS credentials from a named profile, while inside
-Lambda the config comes from SSM Parameter Store and the credentials from the
-execution role. Instead of checking ``os.environ`` in every module, code asks
-the module-level :data:`runtime` singleton, so the detection rule lives in one
-place::
+Where this code runs: a developer machine, CI, or AWS Lambda. Ask the
+:data:`runtime` singleton instead of reading ``os.environ``::
 
     from .runtime import runtime
 
     if runtime.current_runtime_name() == "aws_lambda":
         ...
-
-Importing this module has no side effect; the runtime is worked out when asked.
 """
 
 from __future__ import annotations

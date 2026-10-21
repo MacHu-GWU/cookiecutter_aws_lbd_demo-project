@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-This lambda function takes a name as input and echo back ``hello {name}``
+Takes a name and returns ``hello {name}``.
 """
 
 from pydantic import Field

@@ -1,30 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-The top-level configuration model.
-
-:class:`Config` holds every project-level setting the stacks, the scripts and
-the Lambda functions need. Resource names are not written here but derived in
-``config_01_name.py``.
-
-To add a group of related settings, put them in a new numbered module
-(``config_02_xxx.py``, ...) as a mixin or a nested model, then add it to
-:class:`Config` here. The number gives the reading order: lower modules are
-more foundational.
-
-**Where the values come from:**
-
-- **local:** ``config/*.json5`` files at the repo root, read by
-  :meth:`Config.load_from_local_config_file`.
-- **aws_lambda:** one SSM SecureString parameter per environment, holding the
-  whole config as JSON, read by :meth:`Config.load_from_ssm`. ``mise run
-  config-deploy-<env>`` writes it from the local files, see
-  :meth:`~cookiecutter_aws_lbd_demo.one.one_03_devops.OneDevOpsMixin.deploy_config`.
-
-So the Lambda function sees exactly the same :class:`Config` object as the
-developer. A container loads it once; a config change reaches the functions by
-redeploying them (the lbd stack puts a hash of the config in an environment
-variable, so a new config always updates the functions).
+:class:`Config`, the settings of one environment, and how it is loaded: from
+``config/*.json5`` on a developer machine, from SSM in Lambda.
 """
 
 from __future__ import annotations
@@ -97,9 +75,8 @@ class Config(
     @property
     def config_hash(self) -> str:
         """
-        sha256 of the config JSON, the value :meth:`load_from_ssm` reads. The lbd
-        stack puts it in an environment variable, so a new config changes the
-        template and redeploys the functions.
+        sha256 of the config JSON; the lbd stack puts it in the ``CONFIG_HASH``
+        environment variable of every function.
         """
         return hashlib.sha256(self.model_dump_json().encode("utf-8")).hexdigest()
 

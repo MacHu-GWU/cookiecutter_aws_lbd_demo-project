@@ -1,17 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-Every AWS resource name of the project, with its console URL, ARN and S3 location.
-
-Names are built here, never in the CDK code, so stacks, scripts, Lambda
-functions and tests all refer to the same value
-(``one.config.ssm_param_name_config``) instead of repeating a string template.
-Building a name makes no AWS call.
-
-Naming pattern: ``<resource type>_<attribute>_<short name>``, such as
-``cft_stack_name_infra``, ``cft_stack_url_infra``, ``ssm_param_arn_config``.
-CloudFormation stacks have no ARN property, because the ARN ends in a random ID
-assigned at creation.
+Every AWS resource name of the project, with its console URL, ARN, and S3
+location. Building one makes no AWS call.
 """
 
 from __future__ import annotations
@@ -223,8 +214,8 @@ class ConfigNameMixin:
     @cached_property
     def lambda_layer_name(self: Config) -> str:
         """
-        Name of the Lambda layer, such as ``my_project``. It has no environment
-        in it: one layer, in the DEVOPS account, is shared by every environment.
+        Name of the Lambda layer in the DEVOPS account, such as ``my_project``;
+        every environment uses it.
         """
         return self.project_name_snake
 
@@ -269,9 +260,8 @@ class ConfigNameMixin:
     def s3dir_lambda(self: Config) -> S3Path:
         """
         Where the Lambda layer artifacts go, in the DEVOPS account, such as
-        ``s3://<devops-artifacts>/projects/my_project/lambda/``. It has no
-        environment in it, like :attr:`lambda_layer_name`. The layout below it
-        is the one of ``aws_lbd_art_builder``.
+        ``s3://<devops-artifacts>/projects/my_project/lambda/``. The layout below
+        it is the one of ``aws_lbd_art_builder``.
         """
         return S3Path(
             f"s3://{self.devops_s3_bucket_artifacts}"
@@ -308,8 +298,7 @@ class ConfigNameMixin:
     def s3dir_data(self: Config) -> S3Path:
         """
         The data folder of this environment, such as
-        ``s3://<data-bucket>/projects/my_project/envs/dev/``. The bucket is shared
-        with other projects, so the Lambda role may only touch this folder.
+        ``s3://<data-bucket>/projects/my_project/envs/dev/``.
         """
         return S3Path(
             f"s3://{self.s3_bucket_data}"

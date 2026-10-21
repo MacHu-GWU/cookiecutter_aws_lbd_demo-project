@@ -1,18 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """
-The lbd stack: the Lambda functions, the resources that change on every deploy.
-
-- **Code:** ``Code.from_asset`` of ``build/lambda/source/build/``, which
-  :func:`~cookiecutter_aws_lbd_demo.one.one_03_devops.build_lambda_source` fills
-  with the package's source files. CDK uploads it to the bootstrap bucket of the
-  account, keyed by a hash of the file paths and contents, so an unchanged
-  folder means an unchanged template and no function update.
-- **Dependencies:** one layer version in the DEVOPS account,
-  ``config.lambda_layer_version_arn``.
-- **Config:** not in the template. Each function only gets the name of the SSM
-  parameter that holds the config, see
-  :meth:`~cookiecutter_aws_lbd_demo.config.config_00_main.Config.load_from_ssm`.
+The lbd stack: the Lambda functions, with their code
+(``build/lambda/source/build/``, from ``mise run lambda-source-build``), layer,
+environment variables, and the S3 trigger of s3sync.
 """
 
 from __future__ import annotations
@@ -35,9 +26,8 @@ from ...config.api import Config
 
 CONFIG_HASH_VAR = "CONFIG_HASH"
 """
-The Lambda environment variable that holds ``config.config_hash``. Lambda code
-never reads it: it is there so a new config changes the template, which updates
-the functions and replaces every container that loaded the old config.
+The Lambda environment variable that holds ``config.config_hash``. No code
+reads it; it makes a new config change the template, so the functions update.
 """
 
 PACKAGE_VERSION_VAR = "PACKAGE_VERSION"

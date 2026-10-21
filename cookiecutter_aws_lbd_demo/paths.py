@@ -9,11 +9,7 @@ PACKAGE_NAME = _dir_here.name
 
 class PathEnum:
     """
-    Centralized enumeration of all project paths with absolute path references.
-
-    Provides IDE-autocomplete-friendly access to all project directories and files using
-    absolute paths to eliminate current directory dependencies and ensure consistent path
-    resolution across different execution contexts and DevOps workflows.
+    Every path of the repo, absolute, so no code depends on the current directory.
     """
 
     @cached_property
@@ -73,5 +69,5 @@ class PathEnum:
 
 path_enum = PathEnum()
 """
-Single entry point for all project paths with absolute path references.
+The single :class:`PathEnum` instance of this project.
 """

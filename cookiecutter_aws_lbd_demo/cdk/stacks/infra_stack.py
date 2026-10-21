@@ -1,16 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-The infra stack: long-lived resources that rarely change, the Lambda execution
-role. The Lambda functions themselves are in the lbd stack.
-
-**Why a separate stack:** a code change, the common deploy, only touches the
-lbd stack, and a bad Lambda deploy cannot change IAM permissions. The lbd stack
-gets the role as an argument, see
-:class:`~cookiecutter_aws_lbd_demo.cdk.stack_enum.StackEnum`.
-
-The data bucket is not in any stack: it is shared with other projects and
-exists already. This stack only grants access to this environment's folder of it.
+The infra stack: the Lambda execution role, which the lbd stack receives as
+an argument.
 """
 
 from __future__ import annotations

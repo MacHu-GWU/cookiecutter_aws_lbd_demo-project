@@ -26,8 +26,6 @@ class OneConfigMixin:
         """
         The configuration of the current environment and runtime, loaded once on
         first access: from ``config/*.json5`` locally, from SSM inside Lambda.
-        A Lambda container keeps it for its whole life; a new config reaches the
-        functions by redeploying them.
 
         See :meth:`~cookiecutter_aws_lbd_demo.config.config_00_main.Config.load`.
         """

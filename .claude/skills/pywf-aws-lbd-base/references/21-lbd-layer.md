@@ -16,7 +16,7 @@ Seed repo: [`one/one_03_devops.py`](https://github.com/MacHu-GWU/cookiecutter_aw
 - `--python <lambda_python_version>` from the config.
 - `--no-build`: a dependency without a Linux wheel fails the build, instead of being compiled into a macOS binary that fails only in Lambda.
 
-After the build, every `.so` must be an ELF file and there must be no `.dylib` (`check_layer_binaries`); `validate_artifacts` of the library only checks the direct dependencies.
+After the build, `check_layer_binaries` fails on any binary that is not Linux.
 
 When a dependency ships source only and has C extensions, set `lambda_layer_build_in_container: true` in `config-shared.json5`: it then builds in the AWS SAM image with `UvLambdaLayerContainerBuilder`, which needs Docker and a `.venv` of the same Python.
 
@@ -30,7 +30,7 @@ When a dependency ships source only and has C extensions, set `lambda_layer_buil
 2. Build (section 1), zip, and upload to `config.s3dir_lambda`: `layer/layer.zip` (overwritten), and `layer/<NNNNNN>/uv.lock` per published version.
 3. Publish a layer version named `config.lambda_layer_name`, one name for every environment.
 4. Grant (section 3).
-5. Print the latest ARN, the console URLs of that version, of all versions, and of the artifacts folder, and each workload's pinned version with what to change.
+5. Print the latest version, and for each workload the version it pins and what to change.
 
 ---
 
@@ -48,7 +48,7 @@ Each `config-<env>.json5` says which version its functions use; the Lambda stack
 
 ## 5. Check before deploy
 
-`mise run lambda-layer-check-<env>` calls `GetLayerVersion` on the pinned ARN with the workload's own credentials, the call CloudFormation will make. Lambda answers a version that does not exist and a version that is not shared with the same access-denied error, so the message names both, with the fix: run `lambda-layer-deploy`, then pin the version it prints. Every `cdk-up` task runs it first (`17-cdk-mise-tasks.md`).
+`mise run lambda-layer-check-<env>` calls `GetLayerVersion` on the pinned ARN with the workload's own credentials, the call CloudFormation will make. On failure, run `lambda-layer-deploy`, then pin the version it prints. Every `cdk-up` task runs it first (`17-cdk-mise-tasks.md`).
 
 ---
 

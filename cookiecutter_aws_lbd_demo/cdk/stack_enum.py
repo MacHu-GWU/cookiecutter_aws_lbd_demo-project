@@ -2,16 +2,8 @@
 
 """
 Layer 2 of the cdk_mate two-layer pattern: one CDK stack per entry of
-:class:`~cookiecutter_aws_lbd_demo.cdk.stack_ctx_enum.StackCtxEnum`, same name,
-written out by hand:
-
-- **Arguments by name,** so a new ``__init__`` argument breaks every entry that
-  does not pass it.
-- **Dependencies are attribute access:** ``lbd`` passes
-  ``self.infra.iam_role_for_lambda``, so CDK exports the role ARN from the infra
-  stack, imports it in the lbd stack, and deploys infra first.
-- **One instance per stack:** a cached property is built once; the same construct
-  ID twice in one ``cdk.App`` is an error.
+:class:`~cookiecutter_aws_lbd_demo.cdk.stack_ctx_enum.StackCtxEnum`, of the same
+name, with its arguments by name.
 """
 
 from __future__ import annotations

@@ -1,25 +1,14 @@
 # -*- coding: utf-8 -*-
 
 """
-Read the outputs of the infra stack, from this project or from any other.
-
-**Copy this file as is.** It imports only the standard library (and a type stub
-when type checking), so another project that needs a value of this stack, such as
-:attr:`InfraStackExports.iam_role_for_lambda_arn`, copies this one file instead of depending on this
-project or guessing output names::
+Read the outputs of the infra stack, from this project or from any other. It
+imports only the standard library, so another project can copy it as is::
 
     import boto3
 
     cf_client = boto3.Session(profile_name="my_dev_profile").client("cloudformation")
     exports = InfraStackExports.load(cf_client=cf_client, env_name="dev")
     print(exports.iam_role_for_lambda_arn)
-
-The stack names below are literal values, not built from the config, so the file
-stays self-contained. ``tests_int/`` checks them, and every output key, against
-the deployed stack.
-
-To add a value: add a ``cdk.CfnOutput`` to the stack, then a property here that
-reads it by its output key, and add the property to :meth:`InfraStackExports.to_dict`.
 """
 
 import typing as T
