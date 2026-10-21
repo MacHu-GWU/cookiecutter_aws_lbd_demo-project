@@ -23,7 +23,7 @@ Every deploy runs from a developer machine through `mise run <task>`, with the p
 | `[project] dependencies` / `uv.lock` | `lambda-layer-deploy`, pin the printed version in `config-<env>.json5`, then `cdk-up-<env>-all` |
 | infrastructure (roles, triggers, a new function) | `cdk-up-<env>-all` |
 
-After a config change (a pinned layer version, a function added or removed), run `gen-quick-links` and commit `QUICK_LINKS.md` with it (`05-config-names.md`).
+After a config change that adds, removes, or renames a resource (a function, for example), run `gen-quick-links` and commit `QUICK_LINKS.md` with it (`05-config-names.md`).
 
 `cdk-up-<env>-*` already runs `lambda-source-build`, `lambda-layer-check-<env>`, and `config-deploy-<env>` first (`17-cdk-mise-tasks.md`), so the code, the layer pin, and the config of one environment never drift apart.
 

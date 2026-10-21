@@ -34,7 +34,6 @@ def test_names(config: Config):
 
     assert config.s3dir_lambda.uri == "s3://my-devops-artifacts/projects/my_project/lambda/"
     assert "my-devops-artifacts?prefix=projects/my_project/lambda/" in config.s3dir_lambda_url
-    assert config.get_s3dir_lambda_layer_version(7).uri == "s3://my-devops-artifacts/projects/my_project/lambda/layer/000007/"
     assert config.s3_bucket_data_properties_url.endswith("/s3/buckets/my-data?region=us-east-1&tab=properties")
     assert config.s3dir_data.uri == "s3://my-data/projects/my_project/envs/dev/"
     assert config.s3dir_source.uri == "s3://my-data/projects/my_project/envs/dev/source/"

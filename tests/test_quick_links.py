@@ -27,8 +27,8 @@ def test_load_env_configs(fake_dir_config):
 def test_render_quick_links(config: Config):
     text = render_quick_links({"dev": config, "tst": ValueError("/secret/path")})
     assert "## devops\n" in text
-    assert "| Lambda layer version pinned by dev | [`my_project:7`](" in text
-    assert "/lambda/layer/000007/`](" in text
+    assert "| Lambda layer, every version | [`my_project`](" in text
+    assert "my_project:7" not in text
     assert "| Lambda function, s3sync | [`my-project-dev-s3sync`](" in text
     assert (
         "| CloudWatch log group, hello | [`/aws/lambda/my-project-dev-hello`](" in text

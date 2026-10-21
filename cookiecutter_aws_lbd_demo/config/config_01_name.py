@@ -275,14 +275,6 @@ class ConfigNameMixin:
         """
         return self.s3dir_lambda.console_url
 
-    def get_s3dir_lambda_layer_version(self: Config, version: int) -> S3Path:
-        """
-        The folder of one layer version under :attr:`s3dir_lambda`, such as
-        ``.../lambda/layer/000007/``; it holds the ``uv.lock`` the version was
-        built from. Open it signed in to the DEVOPS account.
-        """
-        return self.s3dir_lambda.joinpath("layer", str(version).zfill(6)).to_dir()
-
     @cached_property
     def s3_bucket_data_properties_url(self: Config) -> str:
         """

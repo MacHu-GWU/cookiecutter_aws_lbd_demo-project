@@ -37,34 +37,15 @@ TABLE_HEADER = ["| Resource | Console |", "| :--- | :--- |"]
 
 def render_devops_rows(configs: dict[str, Config]) -> list[str]:
     """
-    The rows of the devops table: the layer, the version each environment
-    pins, and the layer artifacts in S3.
+    The rows of the devops table: the layer and its artifacts in S3.
 
     :param configs: the configs that loaded, by environment name; at least one.
     """
     c = next(iter(configs.values()))
     rows = [
-        _row("Lambda layer, every version", c.lambda_layer_name, c.lambda_layer_url)
+        _row("Lambda layer, every version", c.lambda_layer_name, c.lambda_layer_url),
+        _row("Lambda layer artifacts", c.s3dir_lambda.uri, c.s3dir_lambda_url),
     ]
-    for env_name, env_c in configs.items():
-        v = env_c.lambda_layer_version
-        s3dir = env_c.get_s3dir_lambda_layer_version(v)
-        url = env_c.get_lambda_layer_version_url(v)
-        rows.append(
-            _row(
-                f"Lambda layer version pinned by {env_name}",
-                f"{c.lambda_layer_name}:{v}",
-                url,
-            )
-        )
-        rows.append(
-            _row(
-                f"uv.lock of the layer version pinned by {env_name}",
-                s3dir.uri,
-                s3dir.console_url,
-            )
-        )
-    rows.append(_row("Lambda layer artifacts", c.s3dir_lambda.uri, c.s3dir_lambda_url))
     return rows
 
 
