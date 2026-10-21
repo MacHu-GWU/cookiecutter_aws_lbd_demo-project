@@ -50,5 +50,5 @@ Seed repo: [`mise_tasks.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_d
 ## 5. The user's yes
 
 - Run freely: `synth`, `plan`, `cdk ls`, `cdk-gen-tasks`, `print-cdk-stack-urls`, `lambda-layer-check-<env>`, `cdk-gc-<env>`.
-- `up`, `down`, `config-deploy-*`, and `config-delete-*` change AWS: run them only after the user's yes, one environment per yes. `mise run int-test` reads deployed stacks; ask before relying on it.
+- `up`, `down`, `config-deploy-*`, and `config-delete-*` change AWS: run them only after the user's yes, one environment per yes. `mise run int-test` invokes the deployed functions and writes test data; it needs the user's yes too. Each of these says `writes to AWS` in its description.
 - To run one stack yourself, call the cdk CLI from `cdk/`: `ENV_NAME=<env> mise exec -- cdk diff <stack_name> --exclusively --profile "$AWS_PROFILE_FOR_<ENV>"`. For a cdk option, see the `aws-cdk-cli-ref` skill.

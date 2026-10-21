@@ -1,66 +1,31 @@
 # Project Guide for AI Assistants
 
-This document guides AI assistants on how to navigate and work with this project.
+## What this is
 
-## Project Overview
+A multi-environment AWS Lambda project, deployed with AWS CDK from a developer machine. `README.rst` has the overview, the first-time setup, and the common tasks.
 
-**What this project does:** Read `README.rst` for project description and purpose.
+**Load the `pywf-aws-lbd-base` skill (`.claude/skills/pywf-aws-lbd-base/`) before changing anything.** It is the source of truth for the design: environments, config, the `one` singleton, Lambda handlers, the layer, the stacks, the deploy flow, and the recipes for common changes. Read `SKILL.md`, then only the reference that covers the task. If the code and the skill disagree, the code wins: fix the skill or tell the user.
 
-**Project type:** Python package
+## Tasks
 
-## Core Configuration Files
+Run everything through `mise run <task>`, never the underlying tool. `mise tasks ls` lists every task. The AWS CLI is not on `PATH`: use `mise exec -- aws ...`.
 
-### Tool & Dependency Management
-- `mise.toml` - Task runner and tool version management (Python 3.12, uv, claude)
-- `pyproject.toml` - Python dependencies and package metadata
-- `.venv/` - Virtual environment directory (created by uv)
+| Task | Use |
+| :--- | :--- |
+| `inst` | install the dependencies |
+| `format`, `lint`, `cov` | run all three after every change; keep the coverage |
+| `cdk-synth-<env>-all`, `cdk-plan-<env>-all` | check the stacks |
+| `lambda-layer-build-only`, `lambda-layer-check-<env>` | check the layer |
+| `cdk-gen-tasks` | after changing `cdk/mise_tasks.py`, the stacks, or the environments; it rewrites the `<cdk-stack-tasks>` block of `mise.toml` |
+| `gen-quick-links` | after changing the config or a URL property; it rewrites `QUICK_LINKS.md` |
 
-Use `mise ls python --current` to see the exact Python version in use.
+## Ask before writing to AWS
 
-### CI/CD & Testing
-- `.github/workflows/main.yml` - GitHub Actions CI workflow
-- `codecov.yml` + `.coveragerc` - Code coverage reporting (codecov.io)
-- `.readthedocs.yml` - Documentation hosting (readthedocs.org)
+A task whose description says "writes to AWS" needs the user's yes first, and one yes covers one step in one environment: `lambda-layer-deploy`, `lambda-layer-cleanup-real-run`, `config-deploy-*`, `config-delete-*`, `cdk-up-*`, `cdk-down-*`, `int-test`. Read-only tasks and `aws ... list/get/describe` can run without asking.
 
-### Documentation
-- `docs/source/` - Sphinx documentation source files
-- `docs/source/conf.py` - Sphinx configuration
+## Working rules
 
-## Development Workflow
-
-### Task Management
-List all available tasks:
-```bash
-mise tasks ls
-```
-
-Run a specific task:
-```bash
-mise run ${task_name}
-```
-
-**Key tasks:**
-- `inst` - Install all dependencies using uv (fast package manager)
-- `cov` - Run unit tests with coverage report
-- `build-doc` - Build Sphinx documentation
-
-For complete task reference, run `mise run list-tasks` to generate `.claude/mise-tasks.md`.
-
-### Testing Philosophy
-This project uses **pytest** with a special pattern that allows running individual test files as standalone scripts.
-
-**Example:** See `tests/test_api.py` - the `if __name__ == "__main__":` block demonstrates this pattern. It runs pytest as a subprocess with coverage tracking for the specific module, enabling quick isolated testing during development.
-
-## Working with This Project
-
-**Approach:**
-1. Don't load entire files unnecessarily - read specific files only when needed
-2. Use task commands (`mise run`) instead of direct tool invocation
-3. Follow the testing pattern when creating new test files
-4. Reference configuration files for specific settings rather than assuming defaults
-
-**Tools in use:**
-- **mise-en-place** - Development tool management
-- **uv** - Fast Python package management
-- **pytest** - Unit testing framework
-- **sphinx** - Documentation generation
+- The user commits. Do not commit unless asked.
+- Match the surrounding code: comment density, naming, idiom. Source docstrings say how; the skill says what and why.
+- Tests: follow the `if __name__ == "__main__":` pattern of the existing test files. Never assert a value that changes with a deploy (a layer version, an account ID); read it from the config.
+- Editing the skill: follow `references/00-authoring.md`, regenerate the index with `python3 .claude/skills/pywf-oss-base/scripts/update_skill_index.py --skill_dir .claude/skills/pywf-aws-lbd-base`, and check with `python3 .claude/skills/pywf-oss-base/scripts/check_skill_family.py --skills_dir .claude/skills --prefix pywf-aws-lbd`.

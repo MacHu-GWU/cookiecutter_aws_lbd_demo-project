@@ -93,7 +93,7 @@ CDK_ACTIONS: list[CdkAction] = [
     CdkAction(
         name="up",
         emoji="🟢",
-        summary="Deploy {target} of {env} (no approval prompt)",
+        summary="Deploy {target} of {env}, after building the source, checking the layer, and deploying the config (writes to AWS, no approval prompt)",
         sub_command="deploy",
         options="--require-approval never",
         use_profile=True,
@@ -102,7 +102,7 @@ CDK_ACTIONS: list[CdkAction] = [
     CdkAction(
         name="down",
         emoji="🔴",
-        summary="Destroy {target} of {env} (force, no confirmation)",
+        summary="Destroy {target} of {env} (writes to AWS, force, no confirmation)",
         sub_command="destroy",
         options="--force",
         use_profile=True,
@@ -259,13 +259,13 @@ def _render_env_tasks(env_name: str) -> str:
     gc_command = f"cdk gc --unstable=gc --action=print --profile {profile}"
     lines = [
         f'[tasks."{get_config_task_name("deploy", env_name)}"]',
-        f'description = "⚙️ Deploy the config of {env_name} to SSM Parameter Store"',
+        f'description = "⚙️ Deploy the config of {env_name} to SSM Parameter Store, if it changed (writes to AWS)"',
         f'env = {{ {ENV_NAME_VAR} = "{env_name}" }}',
         'depends = ["inst"]',
         'run = ".venv/bin/python .mise/tasks/config-deploy.py"',
         "",
         f'[tasks."{get_config_task_name("delete", env_name)}"]',
-        f'description = "🗑️ Delete the config of {env_name} from SSM Parameter Store"',
+        f'description = "🗑️ Delete the config of {env_name} from SSM Parameter Store (writes to AWS)"',
         f'env = {{ {ENV_NAME_VAR} = "{env_name}" }}',
         'depends = ["inst"]',
         'run = ".venv/bin/python .mise/tasks/config-delete.py"',
@@ -342,7 +342,7 @@ def render_cdk_tasks(env_stack_targets: dict[str, dict[str, StackTarget]]) -> st
             "\n".join(
                 [
                     f'[tasks."{get_config_task_name(action, ALL)}"]',
-                    f'description = "⚙️ Run config-{action}-<env> for every environment"',
+                    f'description = "⚙️ Run config-{action}-<env> for every environment (writes to AWS)"',
                     f"depends = {depends}".replace("'", '"'),
                 ]
             )
