@@ -18,8 +18,6 @@ Code gets every project-level object from `one`: `from <package_name>.one.api im
 
 Every property is a `cached_property`: computed on first access, once. Importing `one` does no work, loads no heavy library, and makes no AWS call; a property that needs a heavy library imports it inside its body.
 
-The one exception is a value that must follow its source during a long-lived process: a plain `property` with a setter, which reads through a cache instead. The specific files say where this applies.
-
 ---
 
 ## 3. One mixin per concern

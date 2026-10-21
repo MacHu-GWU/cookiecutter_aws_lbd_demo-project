@@ -4,7 +4,6 @@ import pytest
 
 import moto
 import boto3
-from aws_lambda_powertools.utilities import parameters
 
 from cookiecutter_aws_lbd_demo.config.api import CONFIG_SSM_PARAM_NAME_VAR
 from cookiecutter_aws_lbd_demo.config.api import Config
@@ -40,39 +39,39 @@ def test_config_fits_in_standard_ssm_parameter():
         assert len(config.model_dump_json()) < 3000
 
 
+def test_config_hash(config: Config):
+    assert len(config.config_hash) == 64
+    assert (
+        config.config_hash
+        == Config.model_validate_json(config.model_dump_json()).config_hash
+    )
+    changed = config.model_copy(update={"lambda_layer_version": 8})
+    assert changed.config_hash != config.config_hash
+
+
 def test_load_from_ssm(config: Config, monkeypatch):
     """
     Inside Lambda the config is read from SSM, and is the same as the local one.
-    While the JSON is unchanged, the same object comes back.
     """
-    monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
-    parameters.clear_caches()
     with moto.mock_aws():
         ssm_client = boto3.client("ssm", region_name="us-east-1")
+        with pytest.raises(ValueError):
+            Config.load_from_ssm(
+                ssm_client=ssm_client, name=config.ssm_param_name_config
+            )
+
         ssm_client.put_parameter(
             Name=config.ssm_param_name_config,
             Value=config.model_dump_json(),
             Type="SecureString",
         )
         monkeypatch.setenv(CONFIG_SSM_PARAM_NAME_VAR, config.ssm_param_name_config)
-        config_1 = Config.load(env_name="dev", runtime_name="aws_lambda")
-        assert config_1 == config
-        assert Config.load_from_ssm(name=config.ssm_param_name_config) is config_1
-
-        # a new value is picked up only once the cache expires
-        ssm_client.put_parameter(
-            Name=config.ssm_param_name_config,
-            Value=config.model_copy(
-                update={"lambda_layer_version": 8}
-            ).model_dump_json(),
-            Type="SecureString",
-            Overwrite=True,
+        loaded = Config.load(
+            env_name="dev",
+            runtime_name="aws_lambda",
+            ssm_client=ssm_client,
         )
-        assert Config.load_from_ssm(name=config.ssm_param_name_config) is config_1
-        parameters.clear_caches()  # what happens when max_age expires
-        config_2 = Config.load_from_ssm(name=config.ssm_param_name_config)
-        assert config_2.lambda_layer_version == 8
-    parameters.clear_caches()
+        assert loaded == config
 
 
 if __name__ == "__main__":

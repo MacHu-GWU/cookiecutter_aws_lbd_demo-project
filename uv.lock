@@ -414,7 +414,6 @@ dev = [
     { name = "json5" },
     { name = "rich" },
     { name = "simple-aws-lambda" },
-    { name = "simple-aws-ssm-parameter-store" },
 ]
 doc = [
     { name = "docfly" },
@@ -464,7 +463,6 @@ requires-dist = [
     { name = "s3pathlib", specifier = ">=3.0.0,<4.0.0" },
     { name = "simple-aws-lambda", marker = "extra == 'dev'", specifier = ">=0.3.1,<1.0.0" },
     { name = "simple-aws-ssm-parameter-store", specifier = ">=0.3.0,<1.0.0" },
-    { name = "simple-aws-ssm-parameter-store", marker = "extra == 'dev'", specifier = ">=0.3.0,<1.0.0" },
     { name = "soft-deps", specifier = ">=0.1.1,<1.0.0" },
     { name = "sphinx", marker = "extra == 'doc'", specifier = ">=7.4.7,<8.0.0" },
     { name = "sphinx-copybutton", marker = "extra == 'doc'", specifier = ">=0.5.2,<1.0.0" },

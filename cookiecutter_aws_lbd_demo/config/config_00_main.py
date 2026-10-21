@@ -22,33 +22,35 @@ more foundational.
   :meth:`~cookiecutter_aws_lbd_demo.one.one_03_devops.OneDevOpsMixin.deploy_config`.
 
 So the Lambda function sees exactly the same :class:`Config` object as the
-developer, and a config change takes effect without redeploying the function
-(after the parameter cache expires, see :data:`CONFIG_MAX_AGE`).
+developer. A container loads it once; a config change reaches the functions by
+redeploying them (the lbd stack puts a hash of the config in an environment
+variable, so a new config always updates the functions).
 """
 
 from __future__ import annotations
 
+import typing as T
 import os
+import hashlib
 from pathlib import Path
 
 from pydantic import BaseModel
 from pydantic import Field
+from simple_aws_ssm_parameter_store.api import get_parameter
 
 from ..paths import path_enum
 from ..env import EnvNameEnum
 from ..runtime import RuntimeNameEnum
 from .config_01_name import ConfigNameMixin
 
+if T.TYPE_CHECKING:  # pragma: no cover
+    from mypy_boto3_ssm.client import SSMClient
+
 
 CONFIG_SSM_PARAM_NAME_VAR = "CONFIG_SSM_PARAM_NAME"
 """
 The Lambda environment variable that names the SSM parameter holding the config;
 the lbd stack sets it.
-"""
-
-CONFIG_MAX_AGE = 300
-"""
-How long (seconds) a Lambda container caches the config before it reads SSM again.
 """
 
 
@@ -92,6 +94,15 @@ class Config(
     lambda_functions: dict[str, LambdaFunction] = Field()  #: Every Lambda function, by short name, such as ``hello``.
     # fmt: on
 
+    @property
+    def config_hash(self) -> str:
+        """
+        sha256 of the config JSON, the value :meth:`load_from_ssm` reads. The lbd
+        stack puts it in an environment variable, so a new config changes the
+        template and redeploys the functions.
+        """
+        return hashlib.sha256(self.model_dump_json().encode("utf-8")).hexdigest()
+
     @classmethod
     def load_from_local_config_file(
         cls,
@@ -134,55 +145,45 @@ class Config(
     @classmethod
     def load_from_ssm(
         cls,
+        ssm_client: SSMClient,
         name: str,
-        max_age: int = CONFIG_MAX_AGE,
     ) -> Config:
         """
-        Load the config from the SSM parameter ``name``, through the Powertools
-        parameter cache: within ``max_age`` seconds no AWS call is made.
-        """
-        from aws_lambda_powertools.utilities import parameters
+        Load the config from the SSM parameter ``name``.
 
-        value = parameters.get_parameter(name, decrypt=True, max_age=max_age)
-        return _parse_config_json(value)
+        :raises ValueError: the parameter does not exist; deploy it with
+            ``mise run config-deploy-<env>``.
+        """
+        parameter = get_parameter(ssm_client, name, with_decryption=True)
+        if parameter is None:
+            raise ValueError(f"config SSM parameter {name!r} does not exist")
+        return cls.model_validate_json(parameter.value)
 
     @classmethod
     def load(
         cls,
         env_name: str,
         runtime_name: str,
+        ssm_client: SSMClient | None = None,
     ) -> Config:
         """
         Load the config the way the current runtime supports.
 
         :param env_name: such as ``dev``.
         :param runtime_name: such as ``local``, see :class:`~cookiecutter_aws_lbd_demo.runtime.RuntimeNameEnum`.
+        :param ssm_client: required on ``aws_lambda``, to read the config from SSM.
 
         :raises NotImplementedError: on any other runtime, such as CI.
         """
         if runtime_name == RuntimeNameEnum.local.value:
             return cls.load_from_local_config_file(env_name=env_name)
         elif runtime_name == RuntimeNameEnum.aws_lambda.value:
-            return cls.load_from_ssm(name=os.environ[CONFIG_SSM_PARAM_NAME_VAR])
+            return cls.load_from_ssm(
+                ssm_client=ssm_client,
+                name=os.environ[CONFIG_SSM_PARAM_NAME_VAR],
+            )
         else:
             raise NotImplementedError(
                 f"loading config on runtime {runtime_name!r} is not supported, "
                 "deploy from a local machine"
             )
-
-
-_last_config_json: str | None = None
-_last_config: Config | None = None
-
-
-def _parse_config_json(value: str) -> Config:
-    """
-    Parse the config JSON, reusing the last :class:`Config` object while the
-    JSON is unchanged, so the cached properties of the names are not rebuilt on
-    every invocation.
-    """
-    global _last_config_json, _last_config
-    if value != _last_config_json:
-        _last_config = Config.model_validate_json(value)
-        _last_config_json = value
-    return _last_config

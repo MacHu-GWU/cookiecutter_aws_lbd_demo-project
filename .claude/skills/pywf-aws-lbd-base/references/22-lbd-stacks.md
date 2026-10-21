@@ -1,5 +1,5 @@
 ---
-description: "The two stacks of a Lambda project: infra (the execution role per environment, least privilege) and lbd (one function per config entry, all sharing the source asset, the pinned layer, the role, and three environment variables, plus event sources on imported resources), and why there are no versions or aliases. Read before changing a Lambda function's infrastructure, its permissions, or its triggers."
+description: "The two stacks of a Lambda project: infra (the execution role per environment, least privilege) and lbd (one function per config entry, all sharing the source asset, the pinned layer, the role, and four environment variables, plus event sources on imported resources), and why there are no versions or aliases. Read before changing a Lambda function's infrastructure, its permissions, or its triggers."
 ---
 
 # Lambda Stacks
@@ -36,7 +36,7 @@ A function that needs much more than the others gets its own role.
 - `Code.from_asset` of the built source folder (`20-lbd-source-asset.md`);
 - the pinned layer, `LayerVersion.from_layer_version_arn(config.lambda_layer_version_arn)` (`21-lbd-layer.md`);
 - the role, the runtime `python<lambda_python_version>`, and the architecture from `IS_LAMBDA_X86`;
-- three environment variables: `ENV_NAME`, `CONFIG_SSM_PARAM_NAME`, `PACKAGE_VERSION` (`10-lbd-dependencies.md`). Settings belong in the config, not here.
+- four environment variables: `ENV_NAME`, `CONFIG_SSM_PARAM_NAME`, `CONFIG_HASH` (`13-lbd-config-ssm.md`), `PACKAGE_VERSION` (`10-lbd-dependencies.md`). Settings belong in the config, not here.
 
 Its own: `function_name`, `handler` (`<package_name>.lambda_function.<handler>`), `memory_size`, `timeout`, `reserved_concurrent_executions`. Each function's ARN is an output, `LambdaFunctionArn<X>`, read by `lbd_stack_exports.py` (`16-cdk-stack-exports.md`).
 

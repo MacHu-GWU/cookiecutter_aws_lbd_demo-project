@@ -19,7 +19,7 @@ Every deploy runs from a developer machine through `mise run <task>`, with the p
 | What changed | Run |
 | :--- | :--- |
 | function code only | `cdk-up-<env>-all` (or `cdk-up-<env>-lbd-stack`) |
-| a config value | `config-deploy-<env>`; running functions pick it up within the cache time, no redeploy (`13-lbd-config-ssm.md`) |
+| a config value | `cdk-up-<env>-all`: it deploys the config, and the config hash in the template updates the functions (`13-lbd-config-ssm.md`) |
 | `[project] dependencies` / `uv.lock` | `lambda-layer-deploy`, pin the printed version in `config-<env>.json5`, then `cdk-up-<env>-all` |
 | infrastructure (roles, triggers, a new function) | `cdk-up-<env>-all` |
 

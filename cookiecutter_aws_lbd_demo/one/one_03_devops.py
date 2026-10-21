@@ -31,7 +31,7 @@ from ..constants import LAMBDA_SOURCE_INCLUDE
 from ..constants import LAMBDA_SOURCE_EXCLUDE
 from ..config.api import Config
 from ..lazy_imports import simple_aws_lambda
-from ..lazy_imports import simple_aws_ssm_parameter_store
+import simple_aws_ssm_parameter_store.api as simple_aws_ssm_parameter_store
 from ..lazy_imports import aws_lbd_art_builder_uv
 from ..lazy_imports import aws_lbd_art_builder_core
 

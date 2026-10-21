@@ -33,6 +33,13 @@ from ...constants import IS_LAMBDA_X86
 from ...config.api import CONFIG_SSM_PARAM_NAME_VAR
 from ...config.api import Config
 
+CONFIG_HASH_VAR = "CONFIG_HASH"
+"""
+The Lambda environment variable that holds ``config.config_hash``. Lambda code
+never reads it: it is there so a new config changes the template, which updates
+the functions and replaces every container that loaded the old config.
+"""
+
 PACKAGE_VERSION_VAR = "PACKAGE_VERSION"
 """
 The Lambda environment variable that holds ``[project].version`` of ``pyproject.toml``.
@@ -107,6 +114,7 @@ class LbdStack(cdk.Stack):
         environment = {
             ENV_NAME_VAR: config.env_name,
             CONFIG_SSM_PARAM_NAME_VAR: config.ssm_param_name_config,
+            CONFIG_HASH_VAR: config.config_hash,
             PACKAGE_VERSION_VAR: read_package_version(),
         }
         self.lambda_functions: dict[str, lambda_.Function] = {}

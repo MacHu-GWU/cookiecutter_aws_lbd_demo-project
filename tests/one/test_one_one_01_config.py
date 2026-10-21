@@ -22,22 +22,22 @@ def test_config_assigned(config: Config):
 
 def test_config_aws_lambda(config: Config, monkeypatch):
     """
-    Inside Lambda the config is loaded on every access (the SSM read is cached
-    by Powertools), so a new value deployed to SSM is picked up.
+    Inside Lambda the config is loaded once, from SSM, with ``one.ssm_client``.
     """
     monkeypatch.setenv("AWS_LAMBDA_FUNCTION_NAME", "my-func")
+    monkeypatch.setenv(config_00_main.CONFIG_SSM_PARAM_NAME_VAR, "/my/config")
     calls = []
 
-    def load_from_ssm(name: str):
-        calls.append(name)
+    def load_from_ssm(ssm_client, name: str):
+        calls.append((ssm_client, name))
         return config
 
-    monkeypatch.setenv(config_00_main.CONFIG_SSM_PARAM_NAME_VAR, "/my/config")
     monkeypatch.setattr(Config, "load_from_ssm", load_from_ssm)
     one = One()
+    one.ssm_client = "my-ssm-client"
     assert one.config is config
     assert one.config is config
-    assert calls == ["/my/config", "/my/config"]
+    assert calls == [("my-ssm-client", "/my/config")]
 
 
 if __name__ == "__main__":

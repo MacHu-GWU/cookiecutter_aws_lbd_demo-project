@@ -55,6 +55,7 @@ def test_synth(config: Config, tmp_path):
         assert props["Environment"]["Variables"] == {
             "ENV_NAME": "dev",
             "CONFIG_SSM_PARAM_NAME": "/my-project-dev/config",
+            "CONFIG_HASH": config.config_hash,
             "PACKAGE_VERSION": read_package_version(),
         }
 

@@ -47,11 +47,18 @@ class OneBotoSesMixin:
     def _new_bsm(self: One, name: str) -> BotoSesManager:  # pragma: no cover
         """
         On the local runtime use the profile ``AWS_PROFILE_FOR_<NAME>`` when it is
-        set. Otherwise follow the standard credential chain, as a CI runner or a
-        Lambda function would.
+        set. Otherwise follow the standard credential chain, as a CI runner would.
+
+        Inside Lambda it reads nothing from the config: the region and the
+        credentials (the execution role) come from the Lambda environment. The
+        config itself is loaded with this session's SSM client, so it must not
+        depend on the config.
         """
+        runtime_name = self.runtime.current_runtime_name()
+        if runtime_name == RuntimeNameEnum.aws_lambda.value:
+            return BotoSesManager()
         region_name = self.config.aws_region
-        if self.runtime.current_runtime_name() == RuntimeNameEnum.local.value:
+        if runtime_name == RuntimeNameEnum.local.value:
             profile_name = os.environ.get(get_aws_profile_env_var(name), "")
             if profile_name:
                 return BotoSesManager(

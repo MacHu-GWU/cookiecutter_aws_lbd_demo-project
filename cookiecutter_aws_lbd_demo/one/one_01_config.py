@@ -7,6 +7,7 @@ The :attr:`~cookiecutter_aws_lbd_demo.one.one_01_config.OneConfigMixin.config` p
 from __future__ import annotations
 
 import typing as T
+from functools import cached_property
 
 from ..runtime import RuntimeNameEnum
 from ..config.api import Config
@@ -20,34 +21,22 @@ class OneConfigMixin:
     Builds the project :class:`~cookiecutter_aws_lbd_demo.config.config_00_main.Config`.
     """
 
-    _config: Config | None = None
-
-    @property
+    @cached_property
     def config(self: One) -> Config:
         """
-        The configuration of the current environment and runtime.
-
-        - **local:** loaded once on first access.
-        - **aws_lambda:** read again on every access, so a new value deployed with
-          ``mise run config-deploy-<env>`` is picked up without redeploying the
-          function. The SSM read is cached by Powertools, so within
-          :data:`~cookiecutter_aws_lbd_demo.config.config_00_main.CONFIG_MAX_AGE`
-          seconds this makes no AWS call.
+        The configuration of the current environment and runtime, loaded once on
+        first access: from ``config/*.json5`` locally, from SSM inside Lambda.
+        A Lambda container keeps it for its whole life; a new config reaches the
+        functions by redeploying them.
 
         See :meth:`~cookiecutter_aws_lbd_demo.config.config_00_main.Config.load`.
-        Assigning a config, such as ``one.config = config`` in a test, overrides both.
         """
-        if self._config is not None:
-            return self._config
         runtime_name = self.runtime.current_runtime_name()
-        config = Config.load(
+        ssm_client = None
+        if runtime_name == RuntimeNameEnum.aws_lambda.value:
+            ssm_client = self.ssm_client
+        return Config.load(
             env_name=self.env.current_env_name,
             runtime_name=runtime_name,
+            ssm_client=ssm_client,
         )
-        if runtime_name != RuntimeNameEnum.aws_lambda.value:
-            self._config = config
-        return config
-
-    @config.setter
-    def config(self: One, value: Config) -> None:
-        self._config = value

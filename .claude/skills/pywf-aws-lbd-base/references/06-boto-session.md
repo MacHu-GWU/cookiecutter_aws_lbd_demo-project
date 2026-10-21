@@ -27,4 +27,4 @@ Seed repo: [`one/one_02_boto_ses.py`](https://github.com/MacHu-GWU/cookiecutter_
 
 ## 3. Region and account
 
-The region is `one.config.aws_region`, so the session depends on the loaded config. The account is `one.config.aws_account_id`, kept in a secret config file; the session's credentials must belong to it.
+The region is `one.config.aws_region`, so the session depends on the loaded config. The exception is a runtime whose config is itself loaded with the session's clients: there the session reads nothing from the config and takes the region and credentials from the runtime, or loading would be circular. The account is `one.config.aws_account_id`, kept in a secret config file; the session's credentials must belong to it.
