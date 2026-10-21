@@ -131,6 +131,16 @@ class ConfigNameMixin:
         """
         return f"arn:aws:iam::{self.aws_account_id}:role/{self.iam_role_name_lambda}"
 
+    @cached_property
+    def iam_role_url_lambda(self: Config) -> str:
+        """
+        Console URL of :attr:`iam_role_name_lambda`.
+        """
+        return (
+            f"https://{self.aws_region}.console.aws.amazon.com/iam/home"
+            f"?region={self.aws_region}#/roles/details/{self.iam_role_name_lambda}"
+        )
+
     # --------------------------------------------------------------------------
     # SSM parameters
     # --------------------------------------------------------------------------
@@ -190,6 +200,24 @@ class ConfigNameMixin:
         return (
             f"https://{self.aws_region}.console.aws.amazon.com/lambda/home"
             f"?region={self.aws_region}#/functions/{name}?tab=code"
+        )
+
+    def get_lambda_log_group_name(self: Config, short_name: str) -> str:
+        """
+        The CloudWatch log group of a Lambda function, such as
+        ``/aws/lambda/my-project-dev-hello``. Lambda creates it on the first run.
+        """
+        return f"/aws/lambda/{self.get_lambda_function_name(short_name)}"
+
+    def get_lambda_log_group_url(self: Config, short_name: str) -> str:
+        """
+        The console URL of :meth:`get_lambda_log_group_name`.
+        """
+        # the console escapes "/" in the log group name as "$252F"
+        name = self.get_lambda_log_group_name(short_name).replace("/", "$252F")
+        return (
+            f"https://{self.aws_region}.console.aws.amazon.com/cloudwatch/home"
+            f"?region={self.aws_region}#logsV2:log-groups/log-group/{name}"
         )
 
     @cached_property
@@ -257,6 +285,25 @@ class ConfigNameMixin:
         """
         return self.s3dir_lambda.console_url
 
+    def get_s3dir_lambda_layer_version(self: Config, version: int) -> S3Path:
+        """
+        The folder of one layer version under :attr:`s3dir_lambda`, such as
+        ``.../lambda/layer/000007/``; it holds the ``uv.lock`` the version was
+        built from. Open it signed in to the DEVOPS account.
+        """
+        return self.s3dir_lambda.joinpath("layer", str(version).zfill(6)).to_dir()
+
+    @cached_property
+    def s3_bucket_data_properties_url(self: Config) -> str:
+        """
+        S3 console URL of the properties of :attr:`s3_bucket_data`, where its
+        event notifications are.
+        """
+        return (
+            f"https://{self.aws_region}.console.aws.amazon.com/s3/buckets"
+            f"/{self.s3_bucket_data}?region={self.aws_region}&tab=properties"
+        )
+
     @cached_property
     def s3dir_data(self: Config) -> S3Path:
         """
@@ -270,6 +317,13 @@ class ConfigNameMixin:
         )
 
     @cached_property
+    def s3dir_data_url(self: Config) -> str:
+        """
+        S3 console URL of :attr:`s3dir_data`.
+        """
+        return self.s3dir_data.console_url
+
+    @cached_property
     def s3dir_source(self: Config) -> S3Path:
         """
         Where the s3sync function is triggered: every new object under it is copied
@@ -278,8 +332,22 @@ class ConfigNameMixin:
         return self.s3dir_data.joinpath("source/")
 
     @cached_property
+    def s3dir_source_url(self: Config) -> str:
+        """
+        S3 console URL of :attr:`s3dir_source`.
+        """
+        return self.s3dir_source.console_url
+
+    @cached_property
     def s3dir_target(self: Config) -> S3Path:
         """
         Where the s3sync function copies objects to.
         """
         return self.s3dir_data.joinpath("target/")
+
+    @cached_property
+    def s3dir_target_url(self: Config) -> str:
+        """
+        S3 console URL of :attr:`s3dir_target`.
+        """
+        return self.s3dir_target.console_url

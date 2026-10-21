@@ -23,6 +23,8 @@ Every deploy runs from a developer machine through `mise run <task>`, with the p
 | `[project] dependencies` / `uv.lock` | `lambda-layer-deploy`, pin the printed version in `config-<env>.json5`, then `cdk-up-<env>-all` |
 | infrastructure (roles, triggers, a new function) | `cdk-up-<env>-all` |
 
+After a config change (a pinned layer version, a function added or removed), run `gen-quick-links` and commit `QUICK_LINKS.md` with it (`05-config-names.md`).
+
 `cdk-up-<env>-*` already runs `lambda-source-build`, `lambda-layer-check-<env>`, and `config-deploy-<env>` first (`17-cdk-mise-tasks.md`), so the code, the layer pin, and the config of one environment never drift apart.
 
 ---
@@ -40,7 +42,7 @@ Never deploy two environments in parallel.
 
 | Task | Needs a yes |
 | :--- | :--- |
-| `lambda-source-build`, `lambda-layer-build-only`, `cdk-synth-*`, `cdk-plan-*`, `lambda-layer-check-*`, `cdk-gc-*`, `lambda-layer-cleanup`, `cov` | no |
+| `lambda-source-build`, `lambda-layer-build-only`, `gen-quick-links`, `cdk-synth-*`, `cdk-plan-*`, `lambda-layer-check-*`, `cdk-gc-*`, `lambda-layer-cleanup`, `cov` | no |
 | `lambda-layer-deploy` (writes to the devops account) | yes |
 | `config-deploy-*`, `config-delete-*`, `cdk-up-*`, `cdk-down-*`, `lambda-layer-cleanup-real-run` | yes, one environment per yes |
 | `int-test` (invokes deployed functions, writes test data) | yes |

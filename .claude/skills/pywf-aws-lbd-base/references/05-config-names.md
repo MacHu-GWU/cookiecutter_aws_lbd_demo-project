@@ -1,5 +1,5 @@
 ---
-description: "Resource names, ARNs, and console URLs are computed once, as properties of the config, in config_01_name.py, with the naming pattern <resource type>_<attribute>_<short name> and a per-environment prefix. Read before naming any AWS resource, or before writing a name, ARN, or URL as a string anywhere else."
+description: "Resource names, ARNs, and console URLs are computed once, as properties of the config, in config_01_name.py, with the naming pattern <resource type>_<attribute>_<short name> and a per-environment prefix; QUICK_LINKS.md lists every console URL. Read before naming any AWS resource, or before writing a name, ARN, or URL as a string anywhere else."
 ---
 
 # Names in the Config
@@ -26,3 +26,15 @@ Every AWS resource name, its ARN, and its console URL is a `cached_property` of 
 ## 3. Grouping and tests
 
 Group the properties by resource type, under a `# ---` banner comment per type. `tests/config/test_config_config_01_name.py` checks the value of every property with the `config` fixture; add a line there for each new one.
+
+---
+
+## 4. Quick links
+
+`QUICK_LINKS.md` at the repo root holds the console URL of every resource of the project, one table per environment, so a maintainer finds a resource without running a command. `mise run gen-quick-links` renders it from the config files with `<package_name>/quick_links.py`, without an AWS call, and it is committed.
+
+- A new URL property gets a row in `quick_links.py`.
+- It holds no account ID: no ARN, and no URL with the account ID in it, such as the bootstrap bucket of the deployment tool.
+- Run the task after changing the config. `tests/test_quick_links.py` fails when the committed file is out of date; it needs the `-secret` files, so it is skipped where they are missing, such as in CI.
+
+Seed repo: [`quick_links.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/quick_links.py), [`QUICK_LINKS.md`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/QUICK_LINKS.md).

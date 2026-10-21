@@ -59,14 +59,24 @@ def test_make_layer_builder(config: Config):
 
 
 def test_print_lambda_layer_versions(config: Config, capsys):
+    """
+    The pins come from the committed config files, which change with every
+    layer deploy, so the expected lines are built from them.
+    """
+    pinned = load_all_env_configs()["dev"].lambda_layer_version
     one = One()
     one.config = config
-    one.print_lambda_layer_versions(latest_version=2)
+
+    one.print_lambda_layer_versions(latest_version=pinned + 1)
     out = capsys.readouterr().out
-    assert "arn:aws:lambda:us-east-1:999988887777:layer:my_project:2" in out
-    assert "#/layers/my_project/versions/2" in out
+    assert f"arn:aws:lambda:us-east-1:999988887777:layer:my_project:{pinned + 1}" in out
+    assert f"#/layers/my_project/versions/{pinned + 1}" in out
     assert "my-devops-artifacts?prefix=projects/my_project/lambda/" in out
-    assert "set lambda_layer_version: 2 in config/config-dev.json5" in out
+    assert f"set lambda_layer_version: {pinned + 1} in config/config-dev.json5" in out
+
+    one.print_lambda_layer_versions(latest_version=pinned)
+    out = capsys.readouterr().out
+    assert f"dev: version {pinned}, up to date" in out
 
 
 def test_deploy_and_delete_config(config: Config, capsys):
