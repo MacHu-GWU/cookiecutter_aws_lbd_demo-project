@@ -4,7 +4,7 @@ description: "The two enums of stacks: StackCtxEnum (one cdk_mate StackCtx per s
 
 # Stack Enums
 
-Seed repo: [`stack_ctx_enum.py`](https://github.com/MacHu-GWU/cookiecutter_aws_cdk_demo-project/blob/0.1.1/cookiecutter_aws_cdk_demo/cdk/stack_ctx_enum.py), [`stack_enum.py`](https://github.com/MacHu-GWU/cookiecutter_aws_cdk_demo-project/blob/0.1.1/cookiecutter_aws_cdk_demo/cdk/stack_enum.py), [`one_03_cdk.py`](https://github.com/MacHu-GWU/cookiecutter_aws_cdk_demo-project/blob/0.1.1/cookiecutter_aws_cdk_demo/one/one_03_cdk.py).
+Seed repo: [`stack_ctx_enum.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/cdk/stack_ctx_enum.py), [`stack_enum.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/cdk/stack_enum.py), [`one_04_cdk.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/one/one_04_cdk.py).
 
 ---
 
@@ -25,18 +25,18 @@ Building it creates no CDK construct, so tools that only need names and URLs (th
 One CDK stack per stack, in one `cdk.App`, each entry written out by hand:
 
 - `**self.one.stack_ctx_enum.<x>.to_stack_kwargs()`, `config=self.one.config`, then every other argument by name, so a new `__init__` argument breaks every entry that does not pass it.
-- A dependency is attribute access: `alert_topic=self.<a>.alert_topic`. CDK turns it into an export, an import, and a deploy order.
+- A dependency is attribute access: `iam_role_for_lambda=self.infra.iam_role_for_lambda`. CDK turns it into an export, an import, and a deploy order.
 - `synth()` creates every stack, then synthesizes the app.
 
 ---
 
 ## 3. Entries
 
-- Every entry is a `cached_property` named after the stack's short name (`alerts`), so it is built once; the same construct ID twice in one app is an error.
+- Every entry is a `cached_property` named after the stack's short name (`infra`), so it is built once; the same construct ID twice in one app is an error.
 - Both enums have the same entries in the same order, a stack after the stacks it depends on. `tests/cdk/test_cdk_stack_enum.py` checks the two lists match.
 - `get(name)` and `get_all()` read the entries in order; loop over `get_all()` instead of naming each stack.
 - No entry may be named `all`; it is reserved for the tasks that act on every stack.
-- Reach them as `one.stack_ctx_enum` and `one.stack_enum`, from the `one_03_cdk.py` mixin (`08-one-singleton.md`), which imports `aws_cdk` only inside the property.
+- Reach them as `one.stack_ctx_enum` and `one.stack_enum`, from the `one_04_cdk.py` mixin (`08-one-singleton.md`), which imports `aws_cdk` only inside the property.
 
 ---
 

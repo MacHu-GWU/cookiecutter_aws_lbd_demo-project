@@ -21,7 +21,7 @@ description: "Where CDK code lives: everything in <package_name>/cdk/, one stack
         └── stack_02_<topic>.py
 ```
 
-Seed repo: [`alerts_stack.py`](https://github.com/MacHu-GWU/cookiecutter_aws_cdk_demo-project/blob/0.1.1/cookiecutter_aws_cdk_demo/cdk/stacks/alerts_stack.py) (one file), [`publisher_stack/`](https://github.com/MacHu-GWU/cookiecutter_aws_cdk_demo-project/tree/0.1.1/cookiecutter_aws_cdk_demo/cdk/stacks/publisher_stack) (folder).
+Seed repo: [`infra_stack.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/cdk/stacks/infra_stack.py), [`lbd_stack.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/cdk/stacks/lbd_stack.py), both in the one-file form. Switch a stack to the folder form when its file gets long.
 
 ---
 
@@ -29,11 +29,11 @@ Seed repo: [`alerts_stack.py`](https://github.com/MacHu-GWU/cookiecutter_aws_cdk
 
 - `__init__(self, scope, id, stack_name, env, config, <resources of other stacks, by name>)`: the first four come from `StackCtx.to_stack_kwargs()`; `config` is the `Config` of the environment (`04-config-model.md`).
 - The body stores `self.config`, then calls `self.s01_<verb>_<what>()`, `self.s02_...()` in order, one method per resource group. In the folder form each method lives in its `stack_0N_<topic>.py` mixin.
-- **Every name comes from the config** (`05-config-names.md`): `topic_name=self.config.sns_topic_name_<x>`. A stack builds no name string. Add CloudFormation names there too: `cft_stack_name_<x>`, `cft_stack_url_<x>`, `cft_export_name_<value>`.
+- **Every name comes from the config** (`05-config-names.md`): `role_name=self.config.iam_role_name_<x>`. A stack builds no name string. Add CloudFormation names there too: `cft_stack_name_<x>`, `cft_stack_url_<x>`, `cft_export_name_<value>`.
 - Outputs other projects need are a `cdk.CfnOutput` with `export_name=self.config.cft_export_name_<value>`, in a last `s0N_create_outputs` method.
 
 ---
 
 ## 3. The thin `cdk/` folder at the root
 
-Only `cdk.json` (`"app": "../.venv/bin/python cdk_app.py"`) and [`cdk_app.py`](https://github.com/MacHu-GWU/cookiecutter_aws_cdk_demo-project/blob/0.1.1/cdk/cdk_app.py), whose body is `one.stack_enum.synth()`. The app holds the stacks of the current environment only (`03-env.md`), so `ENV_NAME=prd cdk synth` synthesizes prd and never needs another environment's config. Never put stack logic here.
+Only `cdk.json` (`"app": "../.venv/bin/python cdk_app.py"`) and [`cdk_app.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cdk/cdk_app.py), whose body is `one.stack_enum.synth()`. The app holds the stacks of the current environment only (`03-env.md`), so `ENV_NAME=prd cdk synth` synthesizes prd and never needs another environment's config. Never put stack logic here.

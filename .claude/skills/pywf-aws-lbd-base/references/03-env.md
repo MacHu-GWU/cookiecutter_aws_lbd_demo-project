@@ -4,13 +4,17 @@ description: "The environment: which deployment environment (dev, tst, prd) the 
 
 # Environment
 
-Seed repo: [`env.py`](https://github.com/MacHu-GWU/cookiecutter_aws_cdk_demo-project/blob/0.1.1/cookiecutter_aws_cdk_demo/env.py).
+Seed repo: [`env.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/env.py).
 
 ---
 
 ## 1. What it is
 
-The environment is **which** deployment the code targets, independent of where it runs (`02-runtime.md`). `EnvNameEnum` lists every environment: `dev`, `tst`, `prd`. Each one usually lives in its own AWS account.
+The environment is **which** deployment the code targets, independent of where it runs (`02-runtime.md`). `EnvNameEnum` lists every environment.
+
+- **Workload environments,** `dev`, `tst`, `prd`: where the application is deployed. `EnvNameEnum.get_workloads()` lists them in deployment order; code that acts on each environment (config files, deployment tasks, permissions) loops over it, never over the whole enum.
+- **Other environments** hold only shared tooling, not the application; the specific files say which and what they hold.
+- Several environments may share one AWS account. Nothing assumes one account per environment: every resource name carries the environment, so they stay apart.
 
 ---
 
@@ -30,7 +34,7 @@ Everything environment specific (the config, the boto session, and whatever is b
 
 ## 4. Adding an environment
 
-1. Add a member to `EnvNameEnum`.
+1. Add a member to `EnvNameEnum`, among the workloads in deployment order.
 2. Add `config/config-<env>.json5`, and a `config/config-<env>-secret.json5` for your machine; `config/example/` shows the shape of each.
 3. Add `AWS_PROFILE_FOR_<ENV>` to `.env.example` and your `.env`.
 4. Then follow the specific files for what else the new environment needs.

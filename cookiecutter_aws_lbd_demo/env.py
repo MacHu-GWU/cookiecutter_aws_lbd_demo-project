@@ -25,15 +25,28 @@ from functools import cached_property
 
 class EnvNameEnum(enum.Enum):
     """
-    Every environment this project can be deployed to.
+    Every environment of this project: one ``devops`` environment, plus the
+    workload environments (:meth:`get_workloads`) the application is deployed to.
+    Several of them may share one AWS account; resource names keep them apart.
     """
 
+    #: Shared tooling, such as the Lambda layer every workload environment uses.
+    #: Nothing of the application is deployed to it, so it has no config file,
+    #: no stack, and no config in SSM.
+    devops = "devops"
     #: Development, where engineers deploy and test freely.
     dev = "dev"
     #: Test, a production-like environment for integration and acceptance tests.
     tst = "tst"
     #: Production, serving real users.
     prd = "prd"
+
+    @classmethod
+    def get_workloads(cls) -> list[EnvNameEnum]:
+        """
+        Every workload environment, in deployment order: all but :attr:`devops`.
+        """
+        return [member for member in cls if member is not cls.devops]
 
 
 ENV_NAME_VAR = "ENV_NAME"

@@ -34,15 +34,16 @@ def test():
     logger.info(f"preview s3 target: {s3path_target.console_url}")
 
     s3path_target.delete(s3_client=one.s3_client)
-    content = uuid.uuid4().hex
-    s3path_source.write_text(content, s3_client=one.s3_client)
-
-    # Check the target immediately after writing to source
-    # S3 event and LBD should not have propagated yet
     assert s3path_target.exists(s3_client=one.s3_client) is False
 
     # --------------------------------------------------------------------------
-    # after
+    # run: a new source object triggers the function through the S3 event
+    # --------------------------------------------------------------------------
+    content = uuid.uuid4().hex
+    s3path_source.write_text(content, s3_client=one.s3_client)
+
+    # --------------------------------------------------------------------------
+    # after: the target appears within about 10 seconds
     # --------------------------------------------------------------------------
     time.sleep(3)
     n = 7

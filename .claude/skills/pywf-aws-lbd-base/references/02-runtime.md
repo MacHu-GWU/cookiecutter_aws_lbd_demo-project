@@ -4,13 +4,13 @@ description: "The runtime: where the code runs (local or ci), how it is detected
 
 # Runtime
 
-Seed repo: [`runtime.py`](https://github.com/MacHu-GWU/cookiecutter_aws_cdk_demo-project/blob/0.1.1/cookiecutter_aws_cdk_demo/runtime.py).
+Seed repo: [`runtime.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/runtime.py).
 
 ---
 
 ## 1. What it is
 
-The runtime is **where** the code runs, independent of which environment it targets. `RuntimeNameEnum` lists every runtime: `local` (a developer's machine) and `ci` (a CI runner). The `CI` environment variable is the signal for `ci`; anything else is `local`.
+The runtime is **where** the code runs, independent of which environment it targets. `RuntimeNameEnum` lists every runtime: `local` (a developer's machine), `ci` (a CI runner), and the runtimes where the project's own deployed code runs, which the specific files describe. The `CI` environment variable is the signal for `ci`; when no signal matches, it is `local`.
 
 ---
 

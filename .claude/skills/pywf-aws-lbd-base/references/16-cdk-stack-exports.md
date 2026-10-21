@@ -4,13 +4,13 @@ description: "The <x>_stack_exports.py module every stack with outputs has: a st
 
 # Stack Exports
 
-Seed repo: [`alerts_stack_exports.py`](https://github.com/MacHu-GWU/cookiecutter_aws_cdk_demo-project/blob/0.1.1/cookiecutter_aws_cdk_demo/cdk/stacks/alerts_stack_exports.py), [its test](https://github.com/MacHu-GWU/cookiecutter_aws_cdk_demo-project/blob/0.1.1/tests_int/test_cdk_stacks_alerts_stack_exports.py).
+Seed repo: [`infra_stack_exports.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/cdk/stacks/infra_stack_exports.py), [its test](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/tests_int/test_cdk_stacks_infra_stack_exports.py).
 
 ---
 
 ## 1. Why
 
-Another project that needs a value of this stack, such as a topic ARN, copies this one file instead of depending on this project or guessing output keys.
+Another project that needs a value of this stack, such as a role ARN, copies this one file instead of depending on this project or guessing output keys.
 
 ---
 

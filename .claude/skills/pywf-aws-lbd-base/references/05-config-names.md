@@ -4,7 +4,7 @@ description: "Resource names, ARNs, and console URLs are computed once, as prope
 
 # Names in the Config
 
-Seed repo: [`config/config_01_name.py`](https://github.com/MacHu-GWU/cookiecutter_aws_cdk_demo-project/blob/0.1.1/cookiecutter_aws_cdk_demo/config/config_01_name.py).
+Seed repo: [`config/config_01_name.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/config/config_01_name.py).
 
 ---
 

@@ -6,7 +6,7 @@ The AWS session part of ``one``:
 - :attr:`~OneBotoSesMixin.bsm`, the boto session of the current environment,
   and the clients built from it. The account and region are
   ``one.config.aws_account_id`` / ``one.config.aws_region``.
-- :attr:`~OneBotoSesMixin.bsm_devops`, the boto session of the DEVOPS account,
+- :attr:`~OneBotoSesMixin.bsm_devops`, the boto session of the ``devops`` environment,
   which owns the Lambda layer. Only deploy scripts on a developer machine use it.
 """
 
@@ -19,6 +19,7 @@ from functools import cached_property
 import boto3
 from boto_session_manager.api import BotoSesManager
 
+from ..env import EnvNameEnum
 from ..runtime import RuntimeNameEnum
 
 if T.TYPE_CHECKING:  # pragma: no cover
@@ -29,18 +30,11 @@ if T.TYPE_CHECKING:  # pragma: no cover
     from .one_00_main import One
 
 
-DEVOPS = "devops"
-"""
-The name of the DEVOPS account in :func:`get_aws_profile_env_var`. It is not an
-environment: no stack is deployed to it.
-"""
-
-
 def get_aws_profile_env_var(env_name: str) -> str:
     """
     The environment variable that names the local AWS profile of an environment,
     such as ``AWS_PROFILE_FOR_DEV`` for ``dev``, or ``AWS_PROFILE_FOR_DEVOPS`` for
-    :data:`DEVOPS`; mise loads it from ``.env``.
+    ``devops``; mise loads it from ``.env``.
     """
     return f"AWS_PROFILE_FOR_{env_name.upper()}"
 
@@ -78,7 +72,7 @@ class OneBotoSesMixin:
         """
         The boto session of the DEVOPS account, from ``AWS_PROFILE_FOR_DEVOPS``.
         """
-        return self._new_bsm(DEVOPS)
+        return self._new_bsm(EnvNameEnum.devops.value)
 
     @cached_property
     def boto_ses(self: One) -> boto3.Session:  # pragma: no cover

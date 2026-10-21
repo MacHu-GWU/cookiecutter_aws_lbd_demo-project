@@ -2,7 +2,16 @@
 
 import pytest
 
+from cookiecutter_aws_lbd_demo.env import EnvNameEnum
 from cookiecutter_aws_lbd_demo.env import Env
+
+
+def test_get_workloads():
+    assert [member.value for member in EnvNameEnum.get_workloads()] == [
+        "dev",
+        "tst",
+        "prd",
+    ]
 
 
 def test_get_current_env_name(monkeypatch):

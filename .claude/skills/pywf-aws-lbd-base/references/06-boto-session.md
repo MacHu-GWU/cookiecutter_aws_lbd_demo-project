@@ -4,7 +4,7 @@ description: "The boto session of the current environment, one.bsm: one AWS prof
 
 # Boto Session
 
-Seed repo: [`one/one_02_boto_ses.py`](https://github.com/MacHu-GWU/cookiecutter_aws_cdk_demo-project/blob/0.1.1/cookiecutter_aws_cdk_demo/one/one_02_boto_ses.py).
+Seed repo: [`one/one_02_boto_ses.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/one/one_02_boto_ses.py).
 
 ---
 

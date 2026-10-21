@@ -1,0 +1,36 @@
+# -*- coding: utf-8 -*-
+
+"""
+Synth smoke test of the lbd stack: create it through ``StackEnum``, the way
+``cdk/cdk_app.py`` does, and synthesize it. Passing means the constructs, names,
+and cross-stack references are wired up; what each resource looks like is not
+checked here (the names are checked in ``tests/config/test_config_config_01_name.py``).
+"""
+
+from cookiecutter_aws_lbd_demo.cdk.stacks.lbd_stack import LbdStack
+
+import aws_cdk as cdk
+
+from cookiecutter_aws_lbd_demo.config.api import Config
+from cookiecutter_aws_lbd_demo.one.api import One
+from cookiecutter_aws_lbd_demo.one.one_03_devops import build_lambda_source
+from cookiecutter_aws_lbd_demo.cdk.stack_enum import StackEnum
+
+
+def test_synth(config: Config):
+    build_lambda_source()  # Code.from_asset needs the folder
+    one = One()
+    one.config = config
+    stack_enum = StackEnum(app=cdk.App(), one=one)
+    assert isinstance(stack_enum.lbd, LbdStack)
+    stack_enum.app.synth()
+
+
+if __name__ == "__main__":
+    from cookiecutter_aws_lbd_demo.tests import run_cov_test
+
+    run_cov_test(
+        __file__,
+        "cookiecutter_aws_lbd_demo.cdk.stacks.lbd_stack",
+        preview=False,
+    )

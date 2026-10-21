@@ -15,9 +15,9 @@ Each reference covers one topic that can change on its own. When a rule changes,
 ## 2. General files and specific files
 
 - **General files** (`01` to `08`) describe the AWS project conventions shared by every template of this kind: runtime, environment, config, boto session, the `one` singleton. They never mention a specific technology of this template (its deployment tool, its resource kinds, its tasks), and never cite a specific file.
-- **Specific files** (`09` and up) describe what only this template has. Each one's file name starts with a topic prefix (such as `09-<topic>-layout.md`).
+- **Specific files** (`09` and up) describe what only this template has. Each one's file name starts with a topic prefix: `lbd-` for the Lambda functions and everything that ships them (the devops environment, the config in SSM, the layer, the source asset), `cdk-` for the CDK code. They are ordered by how close they are to deployment: the code first, then CDK, then shipping.
 - A fact that both need belongs in the general file; the specific file cites it.
-- **Check:** outside of links, the general files contain none of the specific words. In this template: `cdk`, `stack`, `CloudFormation`, `cft`.
+- **Check:** outside of links, the general files contain none of the specific words. In this template: `cdk`, `stack`, `CloudFormation`, `cft`, `lambda`, `lbd`, `layer`, `devops`.
 
 ---
 
@@ -38,8 +38,8 @@ A reference cites only lower-numbered references, written as `` `NN-slug.md` ``.
 ## 5. File shape and wording
 
 - **Name:** `NN-slug.md`. **Shape:** YAML frontmatter with only `description`, one H1, numbered H2 sections separated by `---`.
-- **`description`:** one double-quoted string, what the file holds, then a trigger starting with "Read when" or "Read before". The SKILL.md index copies the trigger; regenerate it with `python3 .claude/skills/pywf-oss-base/scripts/update_skill_index.py --skill_dir .claude/skills/pywf-aws-cdk-base`, never edit it by hand.
-- **Placeholders:** `<package_name>` (import package), `<env>` / `<ENV>` (environment name, lower / upper case), `<x>` (the short name of a resource). Names from the seed repo appear only in links.
+- **`description`:** one double-quoted string, what the file holds, then a trigger starting with "Read when" or "Read before". The SKILL.md index copies the trigger; regenerate it with `python3 .claude/skills/pywf-oss-base/scripts/update_skill_index.py --skill_dir .claude/skills/pywf-aws-lbd-base`, never edit it by hand.
+- **Placeholders:** `<package_name>` (import package), `<env>` / `<ENV>` (environment name, lower / upper case), `<x>` (the short name of a resource, such as a stack or a Lambda function). Names from the seed repo appear only in links.
 - **Approval wording:** "the user's yes", and "one yes covers one step".
 
 ---

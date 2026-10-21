@@ -5,20 +5,22 @@ Generate the ``<cdk-stack-tasks>`` block of ``mise.toml`` (``mise run cdk-gen-ta
 four tasks per (environment, stack), ``cdk-<action>-<env>-<stack>-stack``, plus
 four ``cdk-<action>-<env>-all`` per environment. Each task prints the console URL
 of the stacks it acts on, then runs one plain cdk command in ``cdk/`` with
-``ENV_NAME`` and ``--profile {{env.AWS_PROFILE_FOR_<ENV>}}``. See the ``pywf-aws-cdk-base`` skill, ``12-cdk-mise-tasks.md``.
+``ENV_NAME`` and ``--profile {{env.AWS_PROFILE_FOR_<ENV>}}``. See the ``pywf-aws-lbd-base`` skill, ``17-cdk-mise-tasks.md``.
 
 Two Lambda specific additions:
 
 - Every cdk task depends on ``lambda-source-build``, because the lbd stack
   deploys ``build/lambda/source/build/`` with ``Code.from_asset``; every ``up``
-  task also depends on ``config-deploy-<env>``, so code and config ship together.
+  task also depends on ``lambda-layer-check-<env>`` (fail early if the layer
+  version is missing or not shared) and ``config-deploy-<env>``, so code and
+  config ship together.
 - Per environment, ``config-deploy-<env>`` / ``config-delete-<env>`` (write /
   delete its config in SSM) and ``cdk-gc-<env>`` (list unused CDK assets in the
   bootstrap bucket; print only). ``config-deploy-all`` / ``config-delete-all``
   do every environment.
 
 The stacks are the entries of :class:`~cookiecutter_aws_lbd_demo.cdk.stack_ctx_enum.StackCtxEnum`,
-the environments the members of :class:`~cookiecutter_aws_lbd_demo.env.EnvNameEnum`;
+the environments the workload members of :class:`~cookiecutter_aws_lbd_demo.env.EnvNameEnum`;
 nothing calls AWS.
 """
 
@@ -244,6 +246,7 @@ def get_depends(action: CdkAction, env_name: str) -> list[str]:
     """
     depends = ["inst", "lambda-source-build"]
     if action.deploy_config:
+        depends.append(f"lambda-layer-check-{env_name}")
         depends.append(get_config_deploy_task_name(env_name))
     return depends
 
@@ -266,6 +269,12 @@ def _render_env_tasks(env_name: str) -> str:
         f'env = {{ {ENV_NAME_VAR} = "{env_name}" }}',
         'depends = ["inst"]',
         'run = ".venv/bin/python .mise/tasks/config-delete.py"',
+        "",
+        f'[tasks."lambda-layer-check-{env_name}"]',
+        f'description = "🔎 Check that {env_name} can use the Lambda layer version of its config"',
+        f'env = {{ {ENV_NAME_VAR} = "{env_name}" }}',
+        'depends = ["inst"]',
+        'run = ".venv/bin/python .mise/tasks/lambda-layer-check.py"',
         "",
         f'[tasks."cdk-gc-{env_name}"]',
         f'description = "🧹 List unused CDK assets in the bootstrap bucket of {env_name} (print only)"',
@@ -347,7 +356,10 @@ def render_project_cdk_tasks() -> str:
     :func:`render_cdk_tasks` for every stack of this project in every environment.
     """
     return render_cdk_tasks(
-        {member.value: get_stack_targets(member.value) for member in EnvNameEnum}
+        {
+            member.value: get_stack_targets(member.value)
+            for member in EnvNameEnum.get_workloads()
+        }
     )
 
 
@@ -358,7 +370,7 @@ def print_cdk_stack_urls() -> None:
     stacks cannot be worked out, such as one without its ``-secret`` config file,
     prints one error line, and the others are still printed.
     """
-    for member in EnvNameEnum:
+    for member in EnvNameEnum.get_workloads():
         env_name = member.value
         print(f"--- {env_name} ---")
         try:

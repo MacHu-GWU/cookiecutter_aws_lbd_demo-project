@@ -4,7 +4,7 @@ description: "How the config is loaded: Config.load dispatches on the runtime, e
 
 # Config Loading
 
-Seed repo: [`config/config_00_main.py`](https://github.com/MacHu-GWU/cookiecutter_aws_cdk_demo-project/blob/0.1.1/cookiecutter_aws_cdk_demo/config/config_00_main.py), [`config/`](https://github.com/MacHu-GWU/cookiecutter_aws_cdk_demo-project/tree/0.1.1/config).
+Seed repo: [`config/config_00_main.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/config/config_00_main.py), [`config/`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/tree/0.2.1/config).
 
 ---
 
@@ -12,7 +12,7 @@ Seed repo: [`config/config_00_main.py`](https://github.com/MacHu-GWU/cookiecutte
 
 - `Config.load(env_name, runtime_name)` is the only loader the rest of the code calls (through `one.config`). It branches on the runtime (`02-runtime.md`) and calls one `load_from_<source>` class method per runtime; a runtime with no source raises `NotImplementedError`.
 - Each `load_from_<source>` method takes everything it reads from as arguments, such as `dir_config`, with a default for normal use. Tests pass their own; the method never reaches for a global it could have been given.
-- In this template only `local` has a source, `load_from_local_config_file`: the project's admin deploys from a local machine.
+- The local source, `load_from_local_config_file`, is the source of truth: the project's admin deploys from a local machine. Any other runtime's source is a copy of it, made by a deployment step; the specific files describe those.
 
 ---
 

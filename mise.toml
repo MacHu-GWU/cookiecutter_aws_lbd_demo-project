@@ -149,7 +149,7 @@ depends = ["inst"]
 
 # CDK
 [tasks.cdk-gen-tasks]
-description = "🧩 Regenerate the config-<deploy|delete>-<env|all>, cdk-gc-<env>, cdk-<action>-<env>-<stack>-stack / -all tasks below from StackCtxEnum and EnvNameEnum (rewrites the <cdk-stack-tasks> block)"
+description = "🧩 Regenerate the config-<deploy|delete>-<env|all>, lambda-layer-check-<env>, cdk-gc-<env>, cdk-<action>-<env>-<stack>-stack / -all tasks below from StackCtxEnum and EnvNameEnum (rewrites the <cdk-stack-tasks> block)"
 run = ".venv/bin/python .mise/tasks/cdk-gen-tasks.py"
 depends = ["inst"]
 
@@ -172,6 +172,12 @@ description = "🗑️ Delete the config of dev from SSM Parameter Store"
 env = { ENV_NAME = "dev" }
 depends = ["inst"]
 run = ".venv/bin/python .mise/tasks/config-delete.py"
+
+[tasks."lambda-layer-check-dev"]
+description = "🔎 Check that dev can use the Lambda layer version of its config"
+env = { ENV_NAME = "dev" }
+depends = ["inst"]
+run = ".venv/bin/python .mise/tasks/lambda-layer-check.py"
 
 [tasks."cdk-gc-dev"]
 description = "🧹 List unused CDK assets in the bootstrap bucket of dev (print only)"
@@ -215,7 +221,7 @@ cdk diff --all --method auto --profile {{env.AWS_PROFILE_FOR_DEV}}
 description = "🟢 Deploy all stacks of dev (no approval prompt)"
 dir = "cdk"
 env = { ENV_NAME = "dev" }
-depends = ["inst", "lambda-source-build", "config-deploy-dev"]
+depends = ["inst", "lambda-source-build", "lambda-layer-check-dev", "config-deploy-dev"]
 run = """
 echo '--- CloudFormation console ---'
 echo 'cookiecutter-aws-lbd-demo-dev-infra: https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/stackinfo?filteringText=cookiecutter-aws-lbd-demo-dev-infra&filteringStatus=active&viewNested=true'
@@ -269,7 +275,7 @@ cdk diff cookiecutter-aws-lbd-demo-dev-infra --exclusively --method auto --profi
 description = "🟢 Deploy stack infra of dev (no approval prompt)"
 dir = "cdk"
 env = { ENV_NAME = "dev" }
-depends = ["inst", "lambda-source-build", "config-deploy-dev"]
+depends = ["inst", "lambda-source-build", "lambda-layer-check-dev", "config-deploy-dev"]
 run = """
 echo '--- CloudFormation console ---'
 echo 'cookiecutter-aws-lbd-demo-dev-infra: https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/stackinfo?filteringText=cookiecutter-aws-lbd-demo-dev-infra&filteringStatus=active&viewNested=true'
@@ -321,7 +327,7 @@ cdk diff cookiecutter-aws-lbd-demo-dev-lbd --exclusively --method auto --profile
 description = "🟢 Deploy stack lbd of dev (no approval prompt)"
 dir = "cdk"
 env = { ENV_NAME = "dev" }
-depends = ["inst", "lambda-source-build", "config-deploy-dev"]
+depends = ["inst", "lambda-source-build", "lambda-layer-check-dev", "config-deploy-dev"]
 run = """
 echo '--- CloudFormation console ---'
 echo 'cookiecutter-aws-lbd-demo-dev-lbd: https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/stackinfo?filteringText=cookiecutter-aws-lbd-demo-dev-lbd&filteringStatus=active&viewNested=true'
@@ -354,6 +360,12 @@ description = "🗑️ Delete the config of tst from SSM Parameter Store"
 env = { ENV_NAME = "tst" }
 depends = ["inst"]
 run = ".venv/bin/python .mise/tasks/config-delete.py"
+
+[tasks."lambda-layer-check-tst"]
+description = "🔎 Check that tst can use the Lambda layer version of its config"
+env = { ENV_NAME = "tst" }
+depends = ["inst"]
+run = ".venv/bin/python .mise/tasks/lambda-layer-check.py"
 
 [tasks."cdk-gc-tst"]
 description = "🧹 List unused CDK assets in the bootstrap bucket of tst (print only)"
@@ -397,7 +409,7 @@ cdk diff --all --method auto --profile {{env.AWS_PROFILE_FOR_TST}}
 description = "🟢 Deploy all stacks of tst (no approval prompt)"
 dir = "cdk"
 env = { ENV_NAME = "tst" }
-depends = ["inst", "lambda-source-build", "config-deploy-tst"]
+depends = ["inst", "lambda-source-build", "lambda-layer-check-tst", "config-deploy-tst"]
 run = """
 echo '--- CloudFormation console ---'
 echo 'cookiecutter-aws-lbd-demo-tst-infra: https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/stackinfo?filteringText=cookiecutter-aws-lbd-demo-tst-infra&filteringStatus=active&viewNested=true'
@@ -451,7 +463,7 @@ cdk diff cookiecutter-aws-lbd-demo-tst-infra --exclusively --method auto --profi
 description = "🟢 Deploy stack infra of tst (no approval prompt)"
 dir = "cdk"
 env = { ENV_NAME = "tst" }
-depends = ["inst", "lambda-source-build", "config-deploy-tst"]
+depends = ["inst", "lambda-source-build", "lambda-layer-check-tst", "config-deploy-tst"]
 run = """
 echo '--- CloudFormation console ---'
 echo 'cookiecutter-aws-lbd-demo-tst-infra: https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/stackinfo?filteringText=cookiecutter-aws-lbd-demo-tst-infra&filteringStatus=active&viewNested=true'
@@ -503,7 +515,7 @@ cdk diff cookiecutter-aws-lbd-demo-tst-lbd --exclusively --method auto --profile
 description = "🟢 Deploy stack lbd of tst (no approval prompt)"
 dir = "cdk"
 env = { ENV_NAME = "tst" }
-depends = ["inst", "lambda-source-build", "config-deploy-tst"]
+depends = ["inst", "lambda-source-build", "lambda-layer-check-tst", "config-deploy-tst"]
 run = """
 echo '--- CloudFormation console ---'
 echo 'cookiecutter-aws-lbd-demo-tst-lbd: https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/stackinfo?filteringText=cookiecutter-aws-lbd-demo-tst-lbd&filteringStatus=active&viewNested=true'
@@ -536,6 +548,12 @@ description = "🗑️ Delete the config of prd from SSM Parameter Store"
 env = { ENV_NAME = "prd" }
 depends = ["inst"]
 run = ".venv/bin/python .mise/tasks/config-delete.py"
+
+[tasks."lambda-layer-check-prd"]
+description = "🔎 Check that prd can use the Lambda layer version of its config"
+env = { ENV_NAME = "prd" }
+depends = ["inst"]
+run = ".venv/bin/python .mise/tasks/lambda-layer-check.py"
 
 [tasks."cdk-gc-prd"]
 description = "🧹 List unused CDK assets in the bootstrap bucket of prd (print only)"
@@ -579,7 +597,7 @@ cdk diff --all --method auto --profile {{env.AWS_PROFILE_FOR_PRD}}
 description = "🟢 Deploy all stacks of prd (no approval prompt)"
 dir = "cdk"
 env = { ENV_NAME = "prd" }
-depends = ["inst", "lambda-source-build", "config-deploy-prd"]
+depends = ["inst", "lambda-source-build", "lambda-layer-check-prd", "config-deploy-prd"]
 run = """
 echo '--- CloudFormation console ---'
 echo 'cookiecutter-aws-lbd-demo-prd-infra: https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/stackinfo?filteringText=cookiecutter-aws-lbd-demo-prd-infra&filteringStatus=active&viewNested=true'
@@ -633,7 +651,7 @@ cdk diff cookiecutter-aws-lbd-demo-prd-infra --exclusively --method auto --profi
 description = "🟢 Deploy stack infra of prd (no approval prompt)"
 dir = "cdk"
 env = { ENV_NAME = "prd" }
-depends = ["inst", "lambda-source-build", "config-deploy-prd"]
+depends = ["inst", "lambda-source-build", "lambda-layer-check-prd", "config-deploy-prd"]
 run = """
 echo '--- CloudFormation console ---'
 echo 'cookiecutter-aws-lbd-demo-prd-infra: https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/stackinfo?filteringText=cookiecutter-aws-lbd-demo-prd-infra&filteringStatus=active&viewNested=true'
@@ -685,7 +703,7 @@ cdk diff cookiecutter-aws-lbd-demo-prd-lbd --exclusively --method auto --profile
 description = "🟢 Deploy stack lbd of prd (no approval prompt)"
 dir = "cdk"
 env = { ENV_NAME = "prd" }
-depends = ["inst", "lambda-source-build", "config-deploy-prd"]
+depends = ["inst", "lambda-source-build", "lambda-layer-check-prd", "config-deploy-prd"]
 run = """
 echo '--- CloudFormation console ---'
 echo 'cookiecutter-aws-lbd-demo-prd-lbd: https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/stackinfo?filteringText=cookiecutter-aws-lbd-demo-prd-lbd&filteringStatus=active&viewNested=true'

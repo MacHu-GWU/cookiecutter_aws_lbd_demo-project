@@ -35,6 +35,7 @@ from pydantic import BaseModel
 from pydantic import Field
 
 from ..paths import path_enum
+from ..env import EnvNameEnum
 from ..runtime import RuntimeNameEnum
 from .config_01_name import ConfigNameMixin
 
@@ -111,6 +112,12 @@ class Config(
         """
         # json5 is a dev dependency; it is not in the Lambda layer.
         import json5
+
+        if env_name == EnvNameEnum.devops.value:
+            raise ValueError(
+                "the devops environment has no config: nothing of the application "
+                "is deployed to it; its values are the devops_* fields of every config"
+            )
 
         if dir_config is None:
             dir_config = path_enum.dir_config

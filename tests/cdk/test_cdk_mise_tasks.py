@@ -55,7 +55,7 @@ def _target(construct_id: str) -> StackTarget:
 def test_render_cdk_tasks():
     """
     The block is valid TOML: per environment, ``config-deploy-<env>``,
-    ``config-delete-<env>`` and ``cdk-gc-<env>``, then four tasks for ``all`` and
+    ``config-delete-<env>``, ``lambda-layer-check-<env>`` and ``cdk-gc-<env>``, then four tasks for ``all`` and
     four per stack, each run in ``cdk/`` with ``ENV_NAME`` set; then
     ``config-deploy-all`` and ``config-delete-all``. A task prints the console URL of exactly the
     stacks it acts on, then the cdk command, then runs it.
@@ -69,9 +69,9 @@ def test_render_cdk_tasks():
     assert block.startswith(BEGIN_MARKER)
     assert block.endswith(END_MARKER)
     tasks = tomllib.loads(block)["tasks"]
-    assert len(tasks) == 2 * (3 + 3 * len(CDK_ACTIONS)) + 2
+    assert len(tasks) == 2 * (4 + 3 * len(CDK_ACTIONS)) + 2
     for name, task in tasks.items():
-        if not name.startswith("config-"):
+        if not name.startswith(("config-", "lambda-layer-check-")):
             assert task["dir"] == "cdk"
 
     # fmt: off
@@ -93,7 +93,10 @@ def test_render_cdk_tasks():
     # every cdk task deploys the built source; up also deploys the config
     assert tasks["cdk-synth-dev-all"]["depends"] == ["inst", "lambda-source-build"]
     assert tasks["cdk-down-dev-a-stack"]["depends"] == ["inst", "lambda-source-build"]
-    assert tasks["cdk-up-prd-my-b-stack"]["depends"] == ["inst", "lambda-source-build", "config-deploy-prd"]
+    assert tasks["cdk-up-prd-my-b-stack"]["depends"] == ["inst", "lambda-source-build", "lambda-layer-check-prd", "config-deploy-prd"]
+    task = tasks["lambda-layer-check-dev"]
+    assert task["env"] == {"ENV_NAME": "dev"}
+    assert task["run"] == ".venv/bin/python .mise/tasks/lambda-layer-check.py"
     # fmt: on
 
     # fmt: off

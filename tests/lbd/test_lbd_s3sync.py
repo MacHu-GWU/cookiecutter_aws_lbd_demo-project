@@ -23,28 +23,33 @@ from cookiecutter_aws_lbd_demo.tests.mock_aws import BaseMockAwsTest
 class Test(BaseMockAwsTest):
     use_mock = True
 
-    s3path_source = None
-    s3path_target = None
-
     @classmethod
     def setup_class_post_hook(cls):
+        # the AWS resources the function expects to exist already
         cls.create_s3_bucket(bucket_name=one.config.s3dir_data.bucket)
-        cls.s3path_source = one.config.s3dir_source.joinpath("file.txt")
-        cls.s3path_target = one.config.s3dir_target.joinpath("file.txt")
-        cls.s3path_source.write_text("hello", s3_client=cls.s3_client)
 
     def test_sync(
         self,
         disable_logger,
     ):
-        assert self.s3path_source.exists(s3_client=self.s3_client) is True
-        assert self.s3path_target.exists(s3_client=self.s3_client) is False
+        # ----------------------------------------------------------------------
+        # before
+        # ----------------------------------------------------------------------
+        s3path_source = one.config.s3dir_source.joinpath("file.txt")
+        s3path_target = one.config.s3dir_target.joinpath("file.txt")
+        s3path_source.write_text("hello", s3_client=self.s3_client)
+        assert s3path_target.exists(s3_client=self.s3_client) is False
 
-        output = Input(s3uri_source=self.s3path_source.uri).sync(
-            s3_client=self.s3_client
-        )
-        assert output.s3path_target.exists(s3_client=self.s3_client) is True
-        assert output.s3path_target.read_text(s3_client=self.s3_client) == "hello"
+        # ----------------------------------------------------------------------
+        # run
+        # ----------------------------------------------------------------------
+        output = Input(s3uri_source=s3path_source.uri).sync(s3_client=self.s3_client)
+
+        # ----------------------------------------------------------------------
+        # after
+        # ----------------------------------------------------------------------
+        assert output.s3path_target == s3path_target
+        assert s3path_target.read_text(s3_client=self.s3_client) == "hello"
 
 
 if __name__ == "__main__":

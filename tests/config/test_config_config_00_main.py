@@ -20,6 +20,11 @@ def test_load_from_local_config_file():
     assert set(config.lambda_functions) == {"hello", "s3sync"}
 
 
+def test_load_devops():
+    with pytest.raises(ValueError):
+        Config.load_from_local_config_file(env_name="devops")
+
+
 def test_load_unsupported_runtime():
     with pytest.raises(NotImplementedError):
         Config.load(env_name="dev", runtime_name="ci")

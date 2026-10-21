@@ -5,10 +5,9 @@ omit =
     cookiecutter_aws_lbd_demo/docs/*
     cookiecutter_aws_lbd_demo/tests/*
     cookiecutter_aws_lbd_demo/vendor/*
-    cookiecutter_aws_lbd_demo/cdk/*
-    cookiecutter_aws_lbd_demo/_version.py
-    cookiecutter_aws_lbd_demo/cli.py
     cookiecutter_aws_lbd_demo/paths.py
+    # only testable against a deployed stack, see tests_int/
+    cookiecutter_aws_lbd_demo/cdk/stacks/*_stack_exports.py
 
 [report]
 # Regexes for lines to exclude from consideration

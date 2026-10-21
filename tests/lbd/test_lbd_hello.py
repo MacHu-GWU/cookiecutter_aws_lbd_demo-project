@@ -7,8 +7,9 @@ Tests the business logic directly by instantiating ``Input`` and calling
 ``main()`` — no AWS services involved.  The ``disable_logger`` fixture
 suppresses log output for cleaner test output.
 
-This is the simplest example of the handler testing pattern: construct the
-Pydantic ``Input`` model, call ``main()``, and assert on the ``Output`` fields.
+This is the simplest example of the before / run / after testing pattern. It
+has no state to prepare (no "before"): "run" builds the Pydantic ``Input`` and
+calls ``main()``, "after" asserts on the ``Output`` fields.
 """
 
 from cookiecutter_aws_lbd_demo.lbd.hello import Input
@@ -17,9 +18,14 @@ from cookiecutter_aws_lbd_demo.lbd.hello import Input
 def test_hello(
     disable_logger,
 ):
-    # invoke api
+    # --------------------------------------------------------------------------
+    # run
+    # --------------------------------------------------------------------------
     output = Input(name="alice").main()
-    # validate response
+
+    # --------------------------------------------------------------------------
+    # after
+    # --------------------------------------------------------------------------
     assert output.message == "hello alice"
 
 

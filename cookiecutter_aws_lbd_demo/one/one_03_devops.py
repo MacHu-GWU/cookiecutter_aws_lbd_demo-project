@@ -41,12 +41,12 @@ if T.TYPE_CHECKING:  # pragma: no cover
 
 def load_all_env_configs() -> dict[str, Config]:
     """
-    The config of every environment whose config files are complete, by name.
+    The config of every workload environment whose config files are complete, by name.
     An environment without its ``-secret`` file (not set up on this machine yet)
     is skipped with a warning.
     """
     configs = {}
-    for member in EnvNameEnum:
+    for member in EnvNameEnum.get_workloads():
         try:
             configs[member.value] = Config.load_from_local_config_file(
                 env_name=member.value
@@ -325,6 +325,42 @@ class OneDevOpsMixin:
                     f"in config/config-{env_name}.json5"
                 )
             print(f"  {env_name}: version {config.lambda_layer_version}, {status}")
+
+    def check_lambda_layer_access(self: One) -> bool:  # pragma: no cover
+        """
+        Check that the account of the current environment can use the layer
+        version of its config, the way CloudFormation will when it creates the
+        functions: ``GetLayerVersion`` with the environment's own credentials.
+
+        Lambda answers a missing cross-account layer version and a missing
+        permission with the same access denied error, so the message covers both.
+
+        :returns: ``True`` if the layer version is usable.
+        """
+        config = self.config
+        arn = config.lambda_layer_version_arn
+        try:
+            self.lambda_client.get_layer_version_by_arn(Arn=arn)
+        except self.lambda_client.exceptions.ClientError as e:
+            print(
+                f"ERROR: env {config.env_name!r} (account {config.aws_account_id}) cannot use layer:"
+            )
+            print(f"  {arn}")
+            print(f"  {e.response['Error']['Code']}: {e.response['Error']['Message']}")
+            print(
+                "Either this version does not exist in the DEVOPS account, or it is not"
+            )
+            print(
+                "shared with this account. Run `mise run lambda-layer-deploy` (it publishes"
+            )
+            print("if uv.lock changed, and always grants every environment), then set")
+            print(
+                f"lambda_layer_version in config/config-{config.env_name}.json5 to the version it prints."
+            )
+            print(f"  all versions (DEVOPS account): {config.lambda_layer_url}")
+            return False
+        print(f"Env {config.env_name!r} can use layer {arn}")
+        return True
 
     def cleanup_old_layer_versions(
         self: One,

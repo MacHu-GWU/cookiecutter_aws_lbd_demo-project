@@ -4,7 +4,7 @@ description: "The one singleton: the only entry point to every project-level obj
 
 # The `one` Singleton
 
-Seed repo: [`one/one_00_main.py`](https://github.com/MacHu-GWU/cookiecutter_aws_cdk_demo-project/blob/0.1.1/cookiecutter_aws_cdk_demo/one/one_00_main.py), [`one/one_01_config.py`](https://github.com/MacHu-GWU/cookiecutter_aws_cdk_demo-project/blob/0.1.1/cookiecutter_aws_cdk_demo/one/one_01_config.py).
+Seed repo: [`one/one_00_main.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/one/one_00_main.py), [`one/one_01_config.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/one/one_01_config.py).
 
 ---
 
@@ -17,6 +17,8 @@ Code gets every project-level object from `one`: `from <package_name>.one.api im
 ## 2. Lazy
 
 Every property is a `cached_property`: computed on first access, once. Importing `one` does no work, loads no heavy library, and makes no AWS call; a property that needs a heavy library imports it inside its body.
+
+The one exception is a value that must follow its source during a long-lived process: a plain `property` with a setter, which reads through a cache instead. The specific files say where this applies.
 
 ---
 

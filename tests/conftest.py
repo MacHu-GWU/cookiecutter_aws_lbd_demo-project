@@ -41,7 +41,7 @@ def fake_dir_config(tmp_path_factory):
     (dir_config / "config-shared-secret.json5").write_text(
         '{devops_aws_account_id: "999988887777"}'
     )
-    for env_name in EnvNameEnum:
+    for env_name in EnvNameEnum.get_workloads():
         path = dir_config / f"config-{env_name.value}-secret.json5"
         path.write_text('{aws_account_id: "111122223333"}')
     with pytest.MonkeyPatch.context() as mp:
