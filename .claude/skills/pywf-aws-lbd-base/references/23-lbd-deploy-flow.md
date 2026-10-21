@@ -43,8 +43,8 @@ Never deploy two environments in parallel.
 | Task | Needs a yes |
 | :--- | :--- |
 | `lambda-source-build`, `lambda-layer-build-only`, `gen-quick-links`, `cdk-synth-*`, `cdk-plan-*`, `lambda-layer-check-*`, `cdk-gc-*`, `lambda-layer-cleanup`, `cov` | no |
-| `lambda-layer-deploy` (writes to the devops account) | yes |
-| `config-deploy-*`, `config-delete-*`, `cdk-up-*`, `cdk-down-*`, `lambda-layer-cleanup-real-run` | yes, one environment per yes |
+| `lambda-layer-deploy`, `lambda-layer-cleanup-real-run` (write to the devops account) | yes |
+| `config-deploy-*`, `config-delete-*`, `cdk-up-*`, `cdk-down-*` | yes, one environment per yes |
 | `int-test` (invokes deployed functions, writes test data) | yes |
 
 Every task that needs a yes says `writes to AWS` in its description in `mise.toml`, so `mise tasks ls` shows which ones they are. Keep that true for a new task.

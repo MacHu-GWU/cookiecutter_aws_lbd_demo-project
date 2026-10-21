@@ -47,7 +47,7 @@ class OneBotoSesMixin:
     def _new_bsm(self: One, name: str) -> BotoSesManager:  # pragma: no cover
         """
         On the local runtime use the profile ``AWS_PROFILE_FOR_<NAME>`` when it is
-        set. Otherwise follow the standard credential chain, as a CI runner would.
+        set. Otherwise use the default credential chain.
 
         Inside Lambda it reads nothing from the config: the region and the
         credentials (the execution role) come from the Lambda environment. The

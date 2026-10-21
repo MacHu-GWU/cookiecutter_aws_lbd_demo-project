@@ -31,11 +31,3 @@ except ImportError:  # pragma: no cover
         name="aws_lbd_art_builder_core",
         error_message="please run 'mise run inst'",
     )
-
-try:
-    import rstobj
-except ImportError:  # pragma: no cover
-    rstobj = MissingDependency(
-        name="rstobj",
-        error_message="please run 'mise run inst'",
-    )

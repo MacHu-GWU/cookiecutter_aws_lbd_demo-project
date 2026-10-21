@@ -12,10 +12,10 @@ Finish every recipe with section 8.
 
 1. `lbd/<x>.py` (or `lbd/<x>/`): `Input`, `Output`, `main`, `lambda_handler` (`09-lbd-handlers.md`).
 2. Import `<x>_handler` in `lambda_function.py`.
-3. An entry `<x>` in `lambda_functions` of `config-shared.json5` and of `config/example/config-shared.json5.example`.
+3. An entry `<x>` in `lambda_functions` of `config-shared.json5`. The example file keeps one sample function; it shows the shape, not every function.
 4. `tests/lbd/test_lbd_<x>.py`, and `tests_int/lbd/test_lbd_<x>.py` (`11-lbd-tests.md`).
 5. If it calls AWS resources the role cannot reach yet: section 2.
-6. Its ARN output and a property `lambda_function_arn_<x>` in `lbd_stack_exports.py` (`16-cdk-stack-exports.md`).
+6. A property `lambda_function_arn_<x>` in `lbd_stack_exports.py` (`16-cdk-stack-exports.md`); the `lbd` stack adds the ARN output of every function itself.
 7. Deploy: `cdk-up-<env>-all`, with the user's yes (`23-lbd-deploy-flow.md`).
 
 ---

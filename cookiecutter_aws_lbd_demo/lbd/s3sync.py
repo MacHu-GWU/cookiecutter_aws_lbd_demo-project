@@ -69,6 +69,7 @@ class Input(BaseInput[Output]):
             s3uri_target=s3path_target.uri,
         )
 
+    @logger.pretty_log()
     def main(self, context=None) -> Output:
         """
         Copy S3 object from source to target location using environment configuration.

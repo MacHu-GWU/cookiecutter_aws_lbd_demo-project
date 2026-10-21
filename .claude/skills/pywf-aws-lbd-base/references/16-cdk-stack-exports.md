@@ -32,6 +32,5 @@ Another project that needs a value of this stack, such as a role ARN, copies thi
 
 ## 4. Adding an output
 
-1. Its export name in the config: `cft_export_name_<value>` (`05-config-names.md`).
-2. A `cdk.CfnOutput` in the stack's outputs method.
-3. A property here, and its line in `to_dict()`.
+1. A `cdk.CfnOutput` in the stack's outputs method; an export name too (`cft_export_name_<value>` in the config, `05-config-names.md`) only if a stack imports it (`14-cdk-layout.md`).
+2. A property here, and its line in `to_dict()`.

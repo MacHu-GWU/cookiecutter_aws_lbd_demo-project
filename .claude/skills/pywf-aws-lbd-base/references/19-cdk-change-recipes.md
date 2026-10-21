@@ -10,7 +10,7 @@ Finish every recipe with section 6.
 
 ## 1. Add a stack `<x>`
 
-1. Config names (`05-config-names.md`, `14-cdk-layout.md`): `cft_stack_name_<x>`, `cft_stack_url_<x>`, and the names of its resources; add them to the names test.
+1. Config names (`05-config-names.md`, `14-cdk-layout.md`): `cft_stack_name_<x>`, `cft_stack_url_<x>`, and the names of its resources; add them to the names test, and a row for each console URL to `quick_links.py`.
 2. The stack (`14-cdk-layout.md`): `stacks/<x>_stack.py`, or `stacks/<x>_stack/` with mixins.
 3. An entry `<x>` in both enums, after the stacks it depends on (`15-cdk-stack-enums.md`).
 4. If it has outputs: `stacks/<x>_stack_exports.py` and its `tests_int/` test (`16-cdk-stack-exports.md`).
@@ -48,6 +48,7 @@ Destroy it in every environment first, `cdk-down-<env>-<x>-stack`, with the user
 ## 6. Checks after any change
 
 1. `mise run cdk-gen-tasks`, if the stacks or the environments changed.
-2. `mise run cdk-synth-<env>-all` for one environment.
-3. `mise run cov`, then `mise run format` and `mise run lint`.
-4. Optionally `mise run cdk-plan-<env>-<x>-stack` to show the diff. Deploying is a separate step, after the user's yes.
+2. `mise run gen-quick-links`, if a config name or URL changed (`05-config-names.md`).
+3. `mise run cdk-synth-<env>-all` for one environment.
+4. `mise run cov`, then `mise run format` and `mise run lint`.
+5. Optionally `mise run cdk-plan-<env>-<x>-stack` to show the diff. Deploying is a separate step, after the user's yes.

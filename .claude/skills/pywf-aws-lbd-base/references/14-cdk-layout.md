@@ -30,7 +30,7 @@ Seed repo: [`infra_stack.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_
 - `__init__(self, scope, id, stack_name, env, config, <resources of other stacks, by name>)`: the first four come from `StackCtx.to_stack_kwargs()`; `config` is the `Config` of the environment (`04-config-model.md`).
 - The body stores `self.config`, then calls `self.s01_<verb>_<what>()`, `self.s02_...()` in order, one method per resource group. In the folder form each method lives in its `stack_0N_<topic>.py` mixin.
 - **Every name comes from the config** (`05-config-names.md`): `role_name=self.config.iam_role_name_<x>`. A stack builds no name string. Add CloudFormation names there too: `cft_stack_name_<x>`, `cft_stack_url_<x>`, `cft_export_name_<value>`.
-- Outputs other projects need are a `cdk.CfnOutput` with `export_name=self.config.cft_export_name_<value>`, in a last `s0N_create_outputs` method.
+- Outputs other projects need are a `cdk.CfnOutput`, in a last `s0N_create_outputs` method. Give it `export_name=self.config.cft_export_name_<value>` only when a stack imports it with `Fn::ImportValue`; the `*_stack_exports.py` modules read outputs by output key and need none.
 
 ---
 

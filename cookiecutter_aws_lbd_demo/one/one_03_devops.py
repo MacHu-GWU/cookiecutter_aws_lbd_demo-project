@@ -11,6 +11,7 @@ from __future__ import annotations
 import typing as T
 import shutil
 from pathlib import Path
+from functools import cached_property
 
 from ..paths import path_enum
 from ..env import EnvNameEnum
@@ -150,14 +151,14 @@ class OneDevOpsMixin:
     # --------------------------------------------------------------------------
     # Layer
     # --------------------------------------------------------------------------
-    @property
+    @cached_property
     def lambda_architecture(self: One) -> str:
         """
         Lambda architecture name, ``x86_64`` or ``arm64``.
         """
         return "x86_64" if IS_LAMBDA_X86 else "arm64"
 
-    @property
+    @cached_property
     def lambda_python_version_tuple(self: One) -> tuple[int, int]:
         """
         ``(3, 12)`` for ``lambda_python_version = "3.12"``.

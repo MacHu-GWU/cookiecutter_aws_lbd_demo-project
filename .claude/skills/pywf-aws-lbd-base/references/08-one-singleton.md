@@ -16,7 +16,7 @@ Code gets every project-level object from `one`: `from <package_name>.one.api im
 
 ## 2. Lazy
 
-Every property is a `cached_property`: computed on first access, once. Importing `one` does no work, loads no heavy library, and makes no AWS call; a property that needs a heavy library imports it inside its body.
+Every property is a `cached_property`: computed on first access, once. Importing `one` does no work and makes no AWS call. A property that needs a heavy library imports it inside its body; an optional tool may instead come from a module of optional imports, which tries each import at load time and leaves a placeholder that raises only when used.
 
 ---
 

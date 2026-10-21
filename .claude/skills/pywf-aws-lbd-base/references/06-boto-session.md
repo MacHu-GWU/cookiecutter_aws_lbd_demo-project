@@ -19,7 +19,9 @@ Seed repo: [`one/one_02_boto_ses.py`](https://github.com/MacHu-GWU/cookiecutter_
 | Runtime (`02-runtime.md`) | Credentials |
 | :--- | :--- |
 | `local`, with `AWS_PROFILE_FOR_<ENV>` set | that named profile |
-| `local` without it, and `ci` | the default credential chain |
+| `local` without it | the default credential chain |
+
+`ci` has no AWS access yet: CI only runs the unit tests, which run as `local` with mocked AWS. A CI that calls AWS will get short-lived credentials through GitHub OIDC (`aws-actions/configure-aws-credentials`), which the default credential chain picks up, and will need its own config source first.
 
 `AWS_PROFILE_FOR_<ENV>` (from `get_aws_profile_env_var(env_name)`) is set in the git-ignored `.env`, because profile names differ per person; `.env.example` lists one per environment with a placeholder value. Never put a profile name in a committed file.
 

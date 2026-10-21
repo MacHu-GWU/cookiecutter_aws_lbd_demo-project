@@ -23,7 +23,7 @@ Seed repo: [`mise_tasks.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_d
 | `cdk-up-<env>-<x>-stack` / `-all` | `cdk deploy --require-approval never` | changes |
 | `cdk-down-<env>-<x>-stack` / `-all` | `cdk destroy --force` | changes |
 
-- Each task runs one plain cdk command in `cdk/`, with `ENV_NAME=<env>`. A `-stack` task selects the stack by its name with `--exclusively`; an `-all` task uses `--all` and lets cdk order the stacks.
+- Each task runs one plain cdk command in `cdk/`, with `ENV_NAME=<env>`. A `-stack` task selects the stack by its name with `--exclusively`; an `-all` task uses `--all` (synth needs none) and lets cdk order the stacks.
 - Every task but synth passes `--profile {{env.AWS_PROFILE_FOR_<ENV>}}` (`06-boto-session.md`) and stops if the variable is unset.
 - **Before the command, every task prints the CloudFormation console URL** (`config.cft_stack_url_<x>`) of each stack it acts on, then the command line.
 - **Dependencies:** every task depends on `inst` and `lambda-source-build`, because the Lambda stack deploys the built source folder and cannot synthesize without it. Every `up` task also depends on `lambda-layer-check-<env>` (stop before CloudFormation if the environment cannot use its layer version) and `config-deploy-<env>` (`13-lbd-config-ssm.md`), so code and config ship together.

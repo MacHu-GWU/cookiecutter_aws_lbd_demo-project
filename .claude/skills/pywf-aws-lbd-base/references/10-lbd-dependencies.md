@@ -13,7 +13,7 @@ Seed repo: [`pyproject.toml`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_
 | Where in `pyproject.toml` | What | In Lambda |
 | :--- | :--- | :--- |
 | `[project] dependencies` | what the functions need at runtime | yes: the layer is built from exactly this list |
-| `dev`, `test`, `doc`, `mise` extras | build, deploy, and test tools: CDK, `cdk-mate`, `json5`, the layer builder, SSM helpers, `moto` | no |
+| `dev`, `test`, `doc`, `mise` extras | build, deploy, and test tools: CDK, `cdk-mate`, `json5`, the layer builder, the layer-version helpers (`simple-aws-lambda`), `moto` | no |
 
 Every package in `[project] dependencies` makes the layer bigger and every cold start slower. Put a package there only if code inside a function imports it.
 
@@ -25,8 +25,8 @@ The function's code is the whole package (minus dev-only folders), and only the 
 
 - A module a function imports must import only `[project] dependencies` at module level.
 - A dev-only library is imported inside the function body that needs it, or through `lazy_imports.py`, which falls back to a `MissingDependency` that raises only when used.
-- `one` is imported in every function, so every `one` mixin must follow this; the CDK and deploy mixins import their libraries lazily (`08-one-singleton.md`).
-- A test imports every handler with only the built source folder on the path, so a violation fails in `mise run cov`, not in AWS.
+- `one` is imported in every function, so every `one` mixin must follow this (`08-one-singleton.md`): the CDK mixin imports `aws_cdk` inside its properties; the deploy mixin imports its tools through `lazy_imports.py`, which tries them at load time and leaves a `MissingDependency` in Lambda, where they are not installed.
+- A test imports every handler from the built source folder, so a module left out of the copy fails in `mise run cov`, not in AWS. It runs with the venv's packages, so it does not catch a dev-only import at module level: keep to the two rules above.
 
 ---
 

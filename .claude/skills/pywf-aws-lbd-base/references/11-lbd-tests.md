@@ -4,7 +4,7 @@ description: "How Lambda functions are tested: unit tests in tests/lbd/ call Inp
 
 # Lambda Tests
 
-Seed repo: [`tests/lbd/`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/tree/0.2.1/tests/lbd), [`tests_int/lbd/`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/tree/0.2.1/tests_int/lbd), [`tests/mock_aws.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/tests/mock_aws.py).
+Seed repo: [`tests/lbd/`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/tree/0.2.1/tests/lbd), [`tests_int/lbd/`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/tree/0.2.1/tests_int/lbd), [`<package_name>/tests/mock_aws.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/tests/mock_aws.py).
 
 ---
 
