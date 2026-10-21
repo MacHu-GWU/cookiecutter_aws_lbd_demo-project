@@ -12,8 +12,10 @@ Two Lambda specific additions:
 - Every cdk task depends on ``lambda-source-build``, because the lbd stack
   deploys ``build/lambda/source/build/`` with ``Code.from_asset``; every ``up``
   task also depends on ``config-deploy-<env>``, so code and config ship together.
-- Per environment, ``config-deploy-<env>`` (write the config to SSM) and
-  ``cdk-gc-<env>`` (list unused CDK assets in the bootstrap bucket; print only).
+- Per environment, ``config-deploy-<env>`` / ``config-delete-<env>`` (write /
+  delete its config in SSM) and ``cdk-gc-<env>`` (list unused CDK assets in the
+  bootstrap bucket; print only). ``config-deploy-all`` / ``config-delete-all``
+  do every environment.
 
 The stacks are the entries of :class:`~cookiecutter_aws_lbd_demo.cdk.stack_ctx_enum.StackCtxEnum`,
 the environments the members of :class:`~cookiecutter_aws_lbd_demo.env.EnvNameEnum`;
@@ -216,11 +218,24 @@ def get_run_script(
     return "\n".join(lines)
 
 
+CONFIG_ACTIONS = ["deploy", "delete"]
+"""
+The ``config-<action>-<env>`` tasks, each runs ``.mise/tasks/config-<action>.py``.
+"""
+
+
+def get_config_task_name(action: str, env_name: str) -> str:
+    """
+    ``config-<action>-<env>``, or ``config-<action>-all`` for :data:`ALL`.
+    """
+    return f"config-{action}-{env_name}"
+
+
 def get_config_deploy_task_name(env_name: str) -> str:
     """
     ``config-deploy-<env>``.
     """
-    return f"config-deploy-{env_name}"
+    return get_config_task_name("deploy", env_name)
 
 
 def get_depends(action: CdkAction, env_name: str) -> list[str]:
@@ -240,11 +255,17 @@ def _render_env_tasks(env_name: str) -> str:
     profile = f"{{{{env.{get_aws_profile_env_var(env_name)}}}}}"
     gc_command = f"cdk gc --unstable=gc --action=print --profile {profile}"
     lines = [
-        f'[tasks."{get_config_deploy_task_name(env_name)}"]',
+        f'[tasks."{get_config_task_name("deploy", env_name)}"]',
         f'description = "⚙️ Deploy the config of {env_name} to SSM Parameter Store"',
         f'env = {{ {ENV_NAME_VAR} = "{env_name}" }}',
         'depends = ["inst"]',
         'run = ".venv/bin/python .mise/tasks/config-deploy.py"',
+        "",
+        f'[tasks."{get_config_task_name("delete", env_name)}"]',
+        f'description = "🗑️ Delete the config of {env_name} from SSM Parameter Store"',
+        f'env = {{ {ENV_NAME_VAR} = "{env_name}" }}',
+        'depends = ["inst"]',
+        'run = ".venv/bin/python .mise/tasks/config-delete.py"',
         "",
         f'[tasks."cdk-gc-{env_name}"]',
         f'description = "🧹 List unused CDK assets in the bootstrap bucket of {env_name} (print only)"',
@@ -304,6 +325,19 @@ def render_cdk_tasks(env_stack_targets: dict[str, dict[str, StackTarget]]) -> st
         for stack_slug, targets in groups:
             for action in CDK_ACTIONS:
                 parts.append(_render_task(action, env_name, stack_slug, targets))
+    for action in CONFIG_ACTIONS:
+        depends = [
+            get_config_task_name(action, env_name) for env_name in env_stack_targets
+        ]
+        parts.append(
+            "\n".join(
+                [
+                    f'[tasks."{get_config_task_name(action, ALL)}"]',
+                    f'description = "⚙️ Run config-{action}-<env> for every environment"',
+                    f"depends = {depends}".replace("'", '"'),
+                ]
+            )
+        )
     parts.append(END_MARKER)
     return "\n\n".join(parts)
 

@@ -109,7 +109,8 @@ class OneDevOpsMixin:
     def deploy_config(self: One):  # pragma: no cover
         """
         Write the whole config of the current environment, as JSON, to its SSM
-        parameter, :attr:`~cookiecutter_aws_lbd_demo.config.config_01_name.ConfigNameMixin.ssm_param_name_config`.
+        parameter, :attr:`~cookiecutter_aws_lbd_demo.config.config_01_name.ConfigNameMixin.ssm_param_name_config`,
+        in the account of that environment.
 
         It is a ``SecureString``, because the ``-secret`` config files go into it
         too. The ``Intelligent-Tiering`` tier switches to an advanced parameter
@@ -126,7 +127,31 @@ class OneDevOpsMixin:
             Overwrite=True,
             Tier="Intelligent-Tiering",
         )
-        print(f"Deployed config of {config.env_name!r} ({len(value)} bytes) to:")
+        print(
+            f"Deployed config of {config.env_name!r} ({len(value)} bytes) "
+            f"to SSM parameter {config.ssm_param_name_config}"
+        )
+        print(f"  {config.ssm_param_url_config}")
+
+    def delete_config(self: One):  # pragma: no cover
+        """
+        Delete the SSM parameter of :meth:`deploy_config`. The Lambda functions
+        of this environment fail to load their config after this, so do it after
+        ``cdk-down``, which does not delete it. Deleting a missing parameter is
+        not an error.
+        """
+        config = self.config
+        try:
+            self.ssm_client.delete_parameter(Name=config.ssm_param_name_config)
+            print(
+                f"Deleted config of {config.env_name!r}: "
+                f"SSM parameter {config.ssm_param_name_config}"
+            )
+        except self.ssm_client.exceptions.ParameterNotFound:
+            print(
+                f"Config of {config.env_name!r} is not deployed: "
+                f"no SSM parameter {config.ssm_param_name_config}"
+            )
         print(f"  {config.ssm_param_url_config}")
 
     # --------------------------------------------------------------------------
@@ -267,9 +292,13 @@ class OneDevOpsMixin:
         """
         Print the latest layer version, and the version each environment uses.
         """
-        print(
-            f"Latest layer: {self.config.get_lambda_layer_version_arn(latest_version)}"
-        )
+        config = self.config
+        print(f"Latest layer: {config.get_lambda_layer_version_arn(latest_version)}")
+        print("Console (sign in to the DEVOPS account):")
+        print(f"  layer version: {config.get_lambda_layer_version_url(latest_version)}")
+        print(f"  all versions:  {config.lambda_layer_url}")
+        print(f"  artifacts:     {config.s3dir_lambda_url}")
+        print("Layer version of each environment:")
         for env_name, config in load_all_env_configs().items():
             if config.lambda_layer_version == latest_version:
                 status = "up to date"

@@ -7,5 +7,5 @@
   s3_bucket_data: "bmt-app-dev-us-east-1-data",
   // The Lambda layer version this environment uses. mise run lambda-layer-deploy
   // prints the latest one; bump it here, then mise run cdk-up-dev-all.
-  lambda_layer_version: 1,
+  lambda_layer_version: 3,
 }

@@ -54,9 +54,10 @@ def _target(construct_id: str) -> StackTarget:
 
 def test_render_cdk_tasks():
     """
-    The block is valid TOML: per environment, ``config-deploy-<env>`` and
-    ``cdk-gc-<env>``, then four tasks for ``all`` and four per stack, each run in
-    ``cdk/`` with ``ENV_NAME`` set. A task prints the console URL of exactly the
+    The block is valid TOML: per environment, ``config-deploy-<env>``,
+    ``config-delete-<env>`` and ``cdk-gc-<env>``, then four tasks for ``all`` and
+    four per stack, each run in ``cdk/`` with ``ENV_NAME`` set; then
+    ``config-deploy-all`` and ``config-delete-all``. A task prints the console URL of exactly the
     stacks it acts on, then the cdk command, then runs it.
     """
     block = render_cdk_tasks(
@@ -68,15 +69,22 @@ def test_render_cdk_tasks():
     assert block.startswith(BEGIN_MARKER)
     assert block.endswith(END_MARKER)
     tasks = tomllib.loads(block)["tasks"]
-    assert len(tasks) == 2 * (2 + 3 * len(CDK_ACTIONS))
+    assert len(tasks) == 2 * (3 + 3 * len(CDK_ACTIONS)) + 2
     for name, task in tasks.items():
-        if not name.startswith("config-deploy-"):
+        if not name.startswith("config-"):
             assert task["dir"] == "cdk"
 
     # fmt: off
     task = tasks["config-deploy-prd"]
     assert task["env"] == {"ENV_NAME": "prd"}
     assert task["run"] == ".venv/bin/python .mise/tasks/config-deploy.py"
+
+    task = tasks["config-delete-dev"]
+    assert task["env"] == {"ENV_NAME": "dev"}
+    assert task["run"] == ".venv/bin/python .mise/tasks/config-delete.py"
+
+    assert tasks["config-deploy-all"]["depends"] == ["config-deploy-dev", "config-deploy-prd"]
+    assert tasks["config-delete-all"]["depends"] == ["config-delete-dev", "config-delete-prd"]
 
     task = tasks["cdk-gc-dev"]
     assert task["depends"] == ["inst", "lambda-source-build"]

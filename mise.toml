@@ -149,7 +149,7 @@ depends = ["inst"]
 
 # CDK
 [tasks.cdk-gen-tasks]
-description = "🧩 Regenerate the config-deploy-<env>, cdk-gc-<env>, cdk-<action>-<env>-<stack>-stack / -all tasks below from StackCtxEnum (rewrites the <cdk-stack-tasks> block)"
+description = "🧩 Regenerate the config-<deploy|delete>-<env|all>, cdk-gc-<env>, cdk-<action>-<env>-<stack>-stack / -all tasks below from StackCtxEnum and EnvNameEnum (rewrites the <cdk-stack-tasks> block)"
 run = ".venv/bin/python .mise/tasks/cdk-gen-tasks.py"
 depends = ["inst"]
 
@@ -166,6 +166,12 @@ description = "⚙️ Deploy the config of dev to SSM Parameter Store"
 env = { ENV_NAME = "dev" }
 depends = ["inst"]
 run = ".venv/bin/python .mise/tasks/config-deploy.py"
+
+[tasks."config-delete-dev"]
+description = "🗑️ Delete the config of dev from SSM Parameter Store"
+env = { ENV_NAME = "dev" }
+depends = ["inst"]
+run = ".venv/bin/python .mise/tasks/config-delete.py"
 
 [tasks."cdk-gc-dev"]
 description = "🧹 List unused CDK assets in the bootstrap bucket of dev (print only)"
@@ -343,6 +349,12 @@ env = { ENV_NAME = "tst" }
 depends = ["inst"]
 run = ".venv/bin/python .mise/tasks/config-deploy.py"
 
+[tasks."config-delete-tst"]
+description = "🗑️ Delete the config of tst from SSM Parameter Store"
+env = { ENV_NAME = "tst" }
+depends = ["inst"]
+run = ".venv/bin/python .mise/tasks/config-delete.py"
+
 [tasks."cdk-gc-tst"]
 description = "🧹 List unused CDK assets in the bootstrap bucket of tst (print only)"
 dir = "cdk"
@@ -519,6 +531,12 @@ env = { ENV_NAME = "prd" }
 depends = ["inst"]
 run = ".venv/bin/python .mise/tasks/config-deploy.py"
 
+[tasks."config-delete-prd"]
+description = "🗑️ Delete the config of prd from SSM Parameter Store"
+env = { ENV_NAME = "prd" }
+depends = ["inst"]
+run = ".venv/bin/python .mise/tasks/config-delete.py"
+
 [tasks."cdk-gc-prd"]
 description = "🧹 List unused CDK assets in the bootstrap bucket of prd (print only)"
 dir = "cdk"
@@ -688,5 +706,13 @@ echo '--- Run command ---'
 echo 'cdk destroy cookiecutter-aws-lbd-demo-prd-lbd --exclusively --force --profile {{env.AWS_PROFILE_FOR_PRD}}'
 cdk destroy cookiecutter-aws-lbd-demo-prd-lbd --exclusively --force --profile {{env.AWS_PROFILE_FOR_PRD}}
 """
+
+[tasks."config-deploy-all"]
+description = "⚙️ Run config-deploy-<env> for every environment"
+depends = ["config-deploy-dev", "config-deploy-tst", "config-deploy-prd"]
+
+[tasks."config-delete-all"]
+description = "⚙️ Run config-delete-<env> for every environment"
+depends = ["config-delete-dev", "config-delete-tst", "config-delete-prd"]
 
 # </cdk-stack-tasks>

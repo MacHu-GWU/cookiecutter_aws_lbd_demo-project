@@ -62,6 +62,8 @@ def test_print_lambda_layer_versions(config: Config, capsys):
     one.print_lambda_layer_versions(latest_version=2)
     out = capsys.readouterr().out
     assert "arn:aws:lambda:us-east-1:999988887777:layer:my_project:2" in out
+    assert "#/layers/my_project/versions/2" in out
+    assert "my-devops-artifacts?prefix=projects/my_project/lambda/" in out
     assert "set lambda_layer_version: 2 in config/config-dev.json5" in out
 
 

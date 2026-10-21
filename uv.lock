@@ -400,6 +400,7 @@ dependencies = [
     { name = "boto3" },
     { name = "pydantic" },
     { name = "s3pathlib" },
+    { name = "simple-aws-ssm-parameter-store" },
     { name = "soft-deps" },
     { name = "vislog" },
 ]
@@ -461,6 +462,7 @@ requires-dist = [
     { name = "rstobj", marker = "extra == 'doc'", specifier = "==2.0.0" },
     { name = "s3pathlib", specifier = ">=3.0.0,<4.0.0" },
     { name = "simple-aws-lambda", marker = "extra == 'dev'", specifier = ">=0.3.1,<1.0.0" },
+    { name = "simple-aws-ssm-parameter-store", specifier = ">=0.3.0,<1.0.0" },
     { name = "soft-deps", specifier = ">=0.1.1,<1.0.0" },
     { name = "sphinx", marker = "extra == 'doc'", specifier = ">=7.4.7,<8.0.0" },
     { name = "sphinx-copybutton", marker = "extra == 'doc'", specifier = ">=0.5.2,<1.0.0" },
@@ -1464,6 +1466,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/fc/bb/50c9d8142b29df68de3a909ffce3279af6209b2963e88cadd3d652bc6b4d/simple_aws_lambda-0.3.1.tar.gz", hash = "sha256:3a091d4ed000b219df73937421d49135fee625097a9b65e4cfe7216bf0977243", size = 18665, upload-time = "2026-10-20T18:36:09.215Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/36/7c/a71d362dd80176d08e944a44ff8cd24d667e683052b542fd608321f9a585/simple_aws_lambda-0.3.1-py3-none-any.whl", hash = "sha256:ad1ce4f28ba84dcc40087f03e274ba2a31515d959e277c5d9997dfad22221e9d", size = 15265, upload-time = "2026-10-20T18:36:08.219Z" },
+]
+
+[[package]]
+name = "simple-aws-ssm-parameter-store"
+version = "0.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "boto3" },
+    { name = "func-args" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d5/19/5e59e7d4f9563ebf6fcdc37653998da5ecc362dcd614359cb6934062d700/simple_aws_ssm_parameter_store-0.3.0.tar.gz", hash = "sha256:a57633d05cb7875ca133e1b2f0a7de1456d933b89088a2af50fb8202c30c6101", size = 22627, upload-time = "2026-10-20T20:59:03.494Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/77/c3/b2f8ea193fe0ae0c3c783a11d846987d72e7852cf6347f40c2a6345fb3ae/simple_aws_ssm_parameter_store-0.3.0-py3-none-any.whl", hash = "sha256:720ae7d27ac2f0fa3bb9a147c110ead74d2f76674fddce7678353083f83b9803", size = 18024, upload-time = "2026-10-20T20:59:02.245Z" },
 ]
 
 [[package]]

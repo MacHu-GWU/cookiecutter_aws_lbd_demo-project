@@ -216,6 +216,24 @@ class ConfigNameMixin:
         """
         return self.get_lambda_layer_version_arn(self.lambda_layer_version)
 
+    @cached_property
+    def lambda_layer_url(self: Config) -> str:
+        """
+        Console URL of :attr:`lambda_layer_name`, listing every version.
+        Open it signed in to the DEVOPS account.
+        """
+        return (
+            f"https://{self.aws_region}.console.aws.amazon.com/lambda/home"
+            f"?region={self.aws_region}#/layers/{self.lambda_layer_name}"
+        )
+
+    def get_lambda_layer_version_url(self: Config, version: int) -> str:
+        """
+        Console URL of one version of :attr:`lambda_layer_name`, with its
+        permissions. Open it signed in to the DEVOPS account.
+        """
+        return f"{self.lambda_layer_url}/versions/{version}"
+
     # --------------------------------------------------------------------------
     # S3 locations
     # --------------------------------------------------------------------------
@@ -231,6 +249,13 @@ class ConfigNameMixin:
             f"s3://{self.devops_s3_bucket_artifacts}"
             f"/projects/{self.project_name_snake}/lambda/"
         )
+
+    @cached_property
+    def s3dir_lambda_url(self: Config) -> str:
+        """
+        S3 console URL of :attr:`s3dir_lambda`. Open it signed in to the DEVOPS account.
+        """
+        return self.s3dir_lambda.console_url
 
     @cached_property
     def s3dir_data(self: Config) -> S3Path:

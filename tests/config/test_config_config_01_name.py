@@ -26,8 +26,11 @@ def test_names(config: Config):
     assert "#/functions/my-project-dev-hello?" in config.get_lambda_function_url("hello")
     assert config.lambda_layer_name == "my_project"
     assert config.lambda_layer_version_arn == "arn:aws:lambda:us-east-1:999988887777:layer:my_project:7"
+    assert config.lambda_layer_url.endswith("?region=us-east-1#/layers/my_project")
+    assert config.get_lambda_layer_version_url(7).endswith("#/layers/my_project/versions/7")
 
     assert config.s3dir_lambda.uri == "s3://my-devops-artifacts/projects/my_project/lambda/"
+    assert "my-devops-artifacts?prefix=projects/my_project/lambda/" in config.s3dir_lambda_url
     assert config.s3dir_data.uri == "s3://my-data/projects/my_project/envs/dev/"
     assert config.s3dir_source.uri == "s3://my-data/projects/my_project/envs/dev/source/"
     assert config.s3dir_target.uri == "s3://my-data/projects/my_project/envs/dev/target/"
