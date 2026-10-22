@@ -17,7 +17,7 @@ import enum
 from functools import cached_property
 
 
-class EnvNameEnum(enum.Enum):
+class EnvNameEnum(enum.StrEnum):
     """
     Every environment of this project: ``devops``, plus the workload environments
     (:meth:`get_workloads`) the application is deployed to.
