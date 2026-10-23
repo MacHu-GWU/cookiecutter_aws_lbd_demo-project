@@ -4,7 +4,7 @@ description: "How the config is loaded: Config.load dispatches on the runtime, e
 
 # Config Loading
 
-Seed repo: [`config/config_00_main.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/config/config_00_main.py), [`config/`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/tree/0.2.1/config).
+Seed repo: [`config/config_00_main.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/1.0.0/cookiecutter_aws_lbd_demo/config/config_00_main.py), [`config/`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/tree/1.0.0/config).
 
 ---
 

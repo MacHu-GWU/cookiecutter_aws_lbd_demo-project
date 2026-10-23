@@ -4,7 +4,7 @@ description: "How a change reaches AWS: all from a developer machine with mise, 
 
 # Lambda Deploy Flow
 
-Seed repo: [`mise.toml`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/mise.toml).
+Seed repo: [`mise.toml`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/1.0.0/mise.toml).
 
 ---
 

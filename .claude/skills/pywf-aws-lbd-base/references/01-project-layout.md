@@ -31,7 +31,7 @@ Each module may use the ones above it, never the ones below.
 | `.env` | personal variables: `ENV_NAME`, `AWS_PROFILE_FOR_<ENV>` | no, git-ignored |
 | `.env.example` | the variables `.env` needs, with placeholder values | yes |
 
-mise loads `.env` for every task. Seed repo: [`.env.example`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/.env.example), [`config/`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/tree/0.2.1/config).
+mise loads `.env` for every task. Seed repo: [`.env.example`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/1.0.0/.env.example), [`config/`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/tree/1.0.0/config).
 
 ---
 

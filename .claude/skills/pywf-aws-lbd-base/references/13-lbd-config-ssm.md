@@ -4,7 +4,7 @@ description: "How a Lambda function gets its config: config-deploy-<env> writes 
 
 # Lambda Config in SSM
 
-Seed repo: [`config/config_00_main.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/config/config_00_main.py), [`one/one_01_config.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/one/one_01_config.py), [`one/one_03_devops.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/one/one_03_devops.py).
+Seed repo: [`config/config_00_main.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/1.0.0/cookiecutter_aws_lbd_demo/config/config_00_main.py), [`one/one_01_config.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/1.0.0/cookiecutter_aws_lbd_demo/one/one_01_config.py), [`one/one_03_devops.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/1.0.0/cookiecutter_aws_lbd_demo/one/one_03_devops.py).
 
 ---
 

@@ -4,7 +4,7 @@ description: "The runtime: where the code runs (local or ci), how it is detected
 
 # Runtime
 
-Seed repo: [`runtime.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/runtime.py).
+Seed repo: [`runtime.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/1.0.0/cookiecutter_aws_lbd_demo/runtime.py).
 
 ---
 

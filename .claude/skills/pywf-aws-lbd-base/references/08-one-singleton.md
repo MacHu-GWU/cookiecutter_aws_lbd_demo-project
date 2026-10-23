@@ -4,7 +4,7 @@ description: "The one singleton: the only entry point to every project-level obj
 
 # The `one` Singleton
 
-Seed repo: [`one/one_00_main.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/one/one_00_main.py), [`one/one_01_config.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/one/one_01_config.py).
+Seed repo: [`one/one_00_main.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/1.0.0/cookiecutter_aws_lbd_demo/one/one_00_main.py), [`one/one_01_config.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/1.0.0/cookiecutter_aws_lbd_demo/one/one_01_config.py).
 
 ---
 

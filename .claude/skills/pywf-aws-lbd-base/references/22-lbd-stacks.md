@@ -4,7 +4,7 @@ description: "The two stacks of a Lambda project: infra (the execution role per 
 
 # Lambda Stacks
 
-Seed repo: [`infra_stack.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/cdk/stacks/infra_stack.py), [`lbd_stack.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/cdk/stacks/lbd_stack.py), [`stack_enum.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/0.2.1/cookiecutter_aws_lbd_demo/cdk/stack_enum.py).
+Seed repo: [`infra_stack.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/1.0.0/cookiecutter_aws_lbd_demo/cdk/stacks/infra_stack.py), [`lbd_stack.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/1.0.0/cookiecutter_aws_lbd_demo/cdk/stacks/lbd_stack.py), [`stack_enum.py`](https://github.com/MacHu-GWU/cookiecutter_aws_lbd_demo-project/blob/1.0.0/cookiecutter_aws_lbd_demo/cdk/stack_enum.py).
 
 ---
 
